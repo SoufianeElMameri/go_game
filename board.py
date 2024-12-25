@@ -2,6 +2,8 @@ from PyQt6.QtWidgets import QFrame
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QPoint
 from PyQt6.QtGui import QPainter, QColor, QBrush
 from piece import Piece
+from player import Player
+from game_logic import GameLogic
 
 class Board(QFrame):  # base the board on a QFrame widget
     updateTimerSignal = pyqtSignal(int)  # signal sent when the timer is updated
@@ -23,7 +25,10 @@ class Board(QFrame):  # base the board on a QFrame widget
         self.timer.timeout.connect(self.timerEvent)  # connect timeout signal to timerEvent method
         self.isStarted = False  # game is not currently started
         self.start()  # start the game which will start the timer
-
+        self.player1 = Player("Hamid")
+        self.player2 = Player("Reda")
+        self.game_logic = GameLogic(self.player1 , self.player2)
+        self.game_logic.assign_pieces()
         self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth+1)] for _ in range(self.boardHeight+1)]  # TODO - create a 2d int/Piece array to store the state of the game
         self.printBoardArray()    # TODO - uncomment this method after creating the array above
 
@@ -95,6 +100,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         if distance <= tolerance:
             # valid click; delegate move logic to tryMove
             if self.tryMove(newX, newY):
+                self.game_logic.switchTurn()
                 print(f"Valid move at intersection newX {newX}, newY {newY}")
             else:
                 print(f"Move failed at intersection newX {newX}, newY {newY}")
@@ -108,6 +114,7 @@ class Board(QFrame):  # base the board on a QFrame widget
 
     def tryMove(self, newX, newY):
         '''tries to move a piece'''
+        
         # check if the position is within the bounds of the board
         if not (0 <= newX <= self.boardHeight and 0 <= newY <= self.boardWidth):
             print(f"Invalid move: Position newX {newX}, newY {newY} is out of bounds")
@@ -116,7 +123,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         # check if the position is empty
         if self.boardArray[newX][newY] == Piece.NoPiece:
             # place the piece (e.g., Black)
-            self.boardArray[newX][newY] = Piece.Black
+            self.boardArray[newX][newY] = self.game_logic.getCurrentPlayer().get_piece()
             self.update()  # Repaint the board
             self.printBoardArray()
             return True
