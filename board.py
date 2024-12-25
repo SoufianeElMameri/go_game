@@ -34,7 +34,20 @@ class Board(QFrame):  # base the board on a QFrame widget
 
     def mousePosToColRow(self, event):
         '''convert the mouse click event to a row and column'''
-        pass  # Implement this method according to your logic
+        # get mouse click's X-coordinate
+        x = event.position().x()
+        # get mouse click's Y-coordinate
+        y = event.position().y()
+
+        # calculate column and row based on square dimensions
+        col = int(x // self.squareWidth())
+        row = int(y // self.squareHeight())
+
+        # ensure the values are within bounds
+        if 0 <= col < self.boardWidth and 0 <= row < self.boardHeight:
+            return row, col
+        else:
+            return None, None
 
     def squareWidth(self):
         '''returns the width of one square in the board'''
@@ -69,10 +82,32 @@ class Board(QFrame):  # base the board on a QFrame widget
 
     def mousePressEvent(self, event):
         '''this event is automatically called when the mouse is pressed'''
-        clickLoc = "click location [" + str(event.x()) + "," + str(event.y()) + "]"  # the location where a mouse click was registered
-        print("mousePressEvent() - " + clickLoc)
-        # TODO you could call some game logic here
-        self.clickLocationSignal.emit(clickLoc)
+        # get mouse click's X-coordinate
+        x = event.position().x()
+        # get mouse click's Y-coordinate
+        y = event.position().y()
+
+        # convert pixel coordinates to row and column
+        row, col = self.mousePosToColRow(event)
+
+        # check if the click is within the board boundaries
+        if row is not None and col is not None:
+            # calculate the top-left pixel of the clicked cell
+            squareWidth = self.squareWidth()
+            squareHeight = self.squareHeight()
+            cell_x = col * squareWidth
+            cell_y = row * squareHeight
+            if self.tryMove(row, col):  # Attempt to make the move
+                print(f"Valid move at row {row}, col {col}")
+            else:
+                print(f"Move failed at row {row}, col {col}")
+            # emit signal with pixel coordinates
+            clickLoc = f"cell top-left: [{int(cell_x)}, {int(cell_y)}], row: {row}, col: {col}"
+            print(f"mousePressEvent() - {clickLoc}")
+            self.clickLocationSignal.emit(clickLoc)
+        else:
+            # handle clicks outside the board
+            print(f"mousePressEvent() - click outside the board at [{x}, {y}]")
 
     def resetGame(self):
         '''clears pieces from the board'''
@@ -80,7 +115,15 @@ class Board(QFrame):  # base the board on a QFrame widget
 
     def tryMove(self, newX, newY):
         '''tries to move a piece'''
-        pass  # Implement this method according to your logic
+        # validate the move
+        if self.boardArray[newX][newY] == Piece.NoPiece:  # Check if the cell is empty
+            self.boardArray[newX][newY] = Piece.Black  # Example: Always place a Black piece
+            self.update()  # Trigger a repaint to show the new piece
+            print(f"Placed Black piece at row {newX}, col {newY}")
+            return True
+        else:
+            print(f"Invalid move: Cell at row {newX}, col {newY} is already occupied")
+            return False
 
     def drawBoardSquares(self, painter):
         '''draw all the square on the board'''
