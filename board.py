@@ -24,7 +24,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         self.isStarted = False  # game is not currently started
         self.start()  # start the game which will start the timer
 
-        self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth)] for _ in range(self.boardHeight)]  # TODO - create a 2d int/Piece array to store the state of the game
+        self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth+1)] for _ in range(self.boardHeight+1)]  # TODO - create a 2d int/Piece array to store the state of the game
         self.printBoardArray()    # TODO - uncomment this method after creating the array above
 
     def printBoardArray(self):
@@ -43,8 +43,8 @@ class Board(QFrame):  # base the board on a QFrame widget
         row = round(y / self.squareHeight())
 
         # clamp the values to be within the board boundaries
-        col = max(0, min(col, self.boardWidth - 1))
-        row = max(0, min(row, self.boardHeight - 1))
+        col = max(0, min(col, self.boardWidth ))
+        row = max(0, min(row, self.boardHeight ))
         return row, col
 
     def squareWidth(self):
@@ -59,7 +59,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         '''starts game'''
         self.isStarted = True  # set the boolean which determines if the game has started to TRUE
         self.resetGame()  # reset the game
-        self.timer.start(self.timerSpeed)  # start the timer with the correct speed
+        #self.timer.start(self.timerSpeed)  # start the timer with the correct speed
         print("start () - timer is started")
 
     def timerEvent(self):
@@ -68,7 +68,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         if Board.counter == 0:
             print("Game over")
         self.counter -= 1
-        print('timerEvent()', self.counter)
+        #print('timerEvent()', self.counter)
         self.updateTimerSignal.emit(self.counter)
 
     def paintEvent(self, event):
@@ -83,19 +83,19 @@ class Board(QFrame):  # base the board on a QFrame widget
         # get mouse click's X and Y coordinates
         x = event.position().x()
         y = event.position().y()
-
         # get the nearest intersection
         newX, newY = self.mousePosToColRow(event)
-
+        print("nx " , newX , "ny " , newY)
         # calculate the actual intersection position in pixels
         intersection_x = newY * self.squareWidth()
         intersection_y = newX * self.squareHeight()
-
+        print("intx " , intersection_x , "inty" , intersection_y)
         # calculate the distance from the click to the intersection
         distance = ((x - intersection_x) ** 2 + (y - intersection_y) ** 2) ** 0.5
-
+        print("distance " , distance)
         # check if the click is within the acceptable radius
         tolerance = min(self.squareWidth(), self.squareHeight()) / 2
+        print("tolerance" , tolerance) 
         if distance <= tolerance:
             # valid click; delegate move logic to tryMove
             if self.tryMove(newX, newY):
@@ -113,7 +113,8 @@ class Board(QFrame):  # base the board on a QFrame widget
     def tryMove(self, newX, newY):
         '''tries to move a piece'''
         # check if the position is within the bounds of the board
-        if not (0 <= newX < self.boardHeight and 0 <= newY < self.boardWidth):
+        print("newX " , newX , "self.boardHeight" , self.boardHeight , "newY " , newY , "self.boardWidth" , self.boardWidth)
+        if not (0 <= newX <= self.boardHeight and 0 <= newY <= self.boardWidth):
             print(f"Invalid move: Position newX {newX}, newY {newY} is out of bounds")
             return False
 
@@ -131,12 +132,10 @@ class Board(QFrame):  # base the board on a QFrame widget
 
     def drawBoardSquares(self, painter):
         '''draw all the square on the board'''
-        print("[DEBUG] drawBoardSquares called")
         squareWidth = int(self.squareWidth())
         squareHeight = int(self.squareHeight())
         for row in range(0, Board.boardHeight):
             for col in range(0, Board.boardWidth):
-                print(f"[DEBUG] Drawing square at row {row}, col {col}")
                 painter.save()
                 painter.translate(col * squareWidth, row * squareHeight)
                 painter.setBrush(QBrush(QColor(181, 136, 99)))  # Set brush color
