@@ -63,6 +63,7 @@ class Board(QFrame):  # base the board on a QFrame widget
     def paintEvent(self, event):
         '''paints the board and the pieces of the game'''
         painter = QPainter(self)
+        #painter.fillRect(self.contentsRect(), QBrush(QColor(245, 222, 179)))
         self.drawBoardSquares(painter)
         self.drawPieces(painter)
 
@@ -83,13 +84,15 @@ class Board(QFrame):  # base the board on a QFrame widget
 
     def drawBoardSquares(self, painter):
         '''draw all the square on the board'''
+        print("[DEBUG] drawBoardSquares called")
         squareWidth = int(self.squareWidth())
         squareHeight = int(self.squareHeight())
         for row in range(0, Board.boardHeight):
             for col in range(0, Board.boardWidth):
+                print(f"[DEBUG] Drawing square at row {row}, col {col}")
                 painter.save()
                 painter.translate(col * squareWidth, row * squareHeight)
-                painter.setBrush(QBrush(QColor(255, 255, 255)))  # Set brush color
+                painter.setBrush(QBrush(QColor(181, 136, 99)))  # Set brush color
                 painter.drawRect(0, 0, squareWidth, squareHeight)  # Draw rectangles
                 painter.restore()
 
