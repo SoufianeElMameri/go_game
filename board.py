@@ -34,20 +34,18 @@ class Board(QFrame):  # base the board on a QFrame widget
 
     def mousePosToColRow(self, event):
         '''convert the mouse click event to a row and column'''
-        # get mouse click's X-coordinate
+        # get mouse click's X and Y coordinates
         x = event.position().x()
-        # get mouse click's Y-coordinate
         y = event.position().y()
 
-        # calculate column and row based on square dimensions
-        col = int(x // self.squareWidth())
-        row = int(y // self.squareHeight())
+        # calculate the nearest intersection
+        col = round(x / self.squareWidth())
+        row = round(y / self.squareHeight())
 
-        # ensure the values are within bounds
-        if 0 <= col < self.boardWidth and 0 <= row < self.boardHeight:
-            return row, col
-        else:
-            return None, None
+        # clamp the values to be within the board boundaries
+        col = max(0, min(col, self.boardWidth - 1))
+        row = max(0, min(row, self.boardHeight - 1))
+        return row, col
 
     def squareWidth(self):
         '''returns the width of one square in the board'''
@@ -82,32 +80,31 @@ class Board(QFrame):  # base the board on a QFrame widget
 
     def mousePressEvent(self, event):
         '''this event is automatically called when the mouse is pressed'''
-        # get mouse click's X-coordinate
+        # get mouse click's X and Y coordinates
         x = event.position().x()
-        # get mouse click's Y-coordinate
         y = event.position().y()
 
-        # convert pixel coordinates to row and column
-        row, col = self.mousePosToColRow(event)
+        # get the nearest intersection
+        newX, newY = self.mousePosToColRow(event)
 
-        # check if the click is within the board boundaries
-        if row is not None and col is not None:
-            # calculate the top-left pixel of the clicked cell
-            squareWidth = self.squareWidth()
-            squareHeight = self.squareHeight()
-            cell_x = col * squareWidth
-            cell_y = row * squareHeight
-            if self.tryMove(row, col):  # Attempt to make the move
-                print(f"Valid move at row {row}, col {col}")
+        # calculate the actual intersection position in pixels
+        intersection_x = newY * self.squareWidth()
+        intersection_y = newX * self.squareHeight()
+
+        # calculate the distance from the click to the intersection
+        distance = ((x - intersection_x) ** 2 + (y - intersection_y) ** 2) ** 0.5
+
+        # check if the click is within the acceptable radius
+        tolerance = min(self.squareWidth(), self.squareHeight()) / 2
+        if distance <= tolerance:
+            # valid click; delegate move logic to tryMove
+            if self.tryMove(newX, newY):
+                print(f"Valid move at intersection newX {newX}, newY {newY}")
             else:
-                print(f"Move failed at row {row}, col {col}")
-            # emit signal with pixel coordinates
-            clickLoc = f"cell top-left: [{int(cell_x)}, {int(cell_y)}], row: {row}, col: {col}"
-            print(f"mousePressEvent() - {clickLoc}")
-            self.clickLocationSignal.emit(clickLoc)
+                print(f"Move failed at intersection newX {newX}, newY {newY}")
         else:
-            # handle clicks outside the board
-            print(f"mousePressEvent() - click outside the board at [{x}, {y}]")
+            # invalid click
+            print("mousePressEvent() - click too far from any intersection, ignoring")
 
     def resetGame(self):
         '''clears pieces from the board'''
@@ -115,14 +112,21 @@ class Board(QFrame):  # base the board on a QFrame widget
 
     def tryMove(self, newX, newY):
         '''tries to move a piece'''
-        # validate the move
-        if self.boardArray[newX][newY] == Piece.NoPiece:  # Check if the cell is empty
-            self.boardArray[newX][newY] = Piece.Black  # Example: Always place a Black piece
-            self.update()  # Trigger a repaint to show the new piece
-            print(f"Placed Black piece at row {newX}, col {newY}")
+        # check if the position is within the bounds of the board
+        if not (0 <= newX < self.boardHeight and 0 <= newY < self.boardWidth):
+            print(f"Invalid move: Position newX {newX}, newY {newY} is out of bounds")
+            return False
+
+        # check if the position is empty
+        if self.boardArray[newX][newY] == Piece.NoPiece:
+            # place the piece (e.g., Black)
+            self.boardArray[newX][newY] = Piece.Black
+            self.update()  # Repaint the board
+            print(f"Placed Black piece at newX {newX}, newY {newY}")
             return True
         else:
-            print(f"Invalid move: Cell at row {newX}, col {newY} is already occupied")
+            # if the position is occupied, reject the move
+            print(f"Invalid move: Cell at newX {newX}, newY {newY} is already occupied")
             return False
 
     def drawBoardSquares(self, painter):
@@ -140,22 +144,33 @@ class Board(QFrame):  # base the board on a QFrame widget
                 painter.restore()
 
     def drawPieces(self, painter):
-        '''draw the pieces on the board'''
-        for row in range(0, len(self.boardArray)):
-            for col in range(0, len(self.boardArray[0])):
+        '''draw the pieces at intersections'''
+        for row in range(len(self.boardArray)):
+            for col in range(len(self.boardArray[0])):
                 piece = self.boardArray[row][col]
-                # skip empty squares
-                if piece == 0:
+                # skip empty intersections
+                if piece == Piece.NoPiece:
                     continue
+
                 painter.save()
-                painter.translate(col * self.squareWidth(), row * self.squareHeight())
-                # TODO draw some pieces as ellipses
-                # TODO choose your color and set the painter brush to the correct color
-                if piece == 1:  # Black piece
-                    painter.setBrush(QColor(0, 0, 0))
-                elif piece == 2:  # White piece
-                    painter.setBrush(QColor(255, 255, 255))
-                radius = int((self.squareWidth() - 2) / 2)
-                center = QPoint(radius, radius)
-                painter.drawEllipse(center, radius, radius)
+
+                # Calculate the center of the intersection
+                x = col * self.squareWidth()
+                y = row * self.squareHeight()
+
+                # Set brush color based on the piece type
+                if piece == Piece.Black:
+                    painter.setBrush(QColor(0, 0, 0))  # Black
+                elif piece == Piece.White:
+                    painter.setBrush(QColor(255, 255, 255))  # White
+
+                # Draw the piece as a circle centered on the intersection
+                radius = min(self.squareWidth(), self.squareHeight()) / 3
+                painter.drawEllipse(
+                    int(x - radius),
+                    int(y - radius),
+                    int(2 * radius),
+                    int(2 * radius)
+                )
+
                 painter.restore()
