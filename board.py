@@ -85,17 +85,13 @@ class Board(QFrame):  # base the board on a QFrame widget
         y = event.position().y()
         # get the nearest intersection
         newX, newY = self.mousePosToColRow(event)
-        print("nx " , newX , "ny " , newY)
         # calculate the actual intersection position in pixels
         intersection_x = newY * self.squareWidth()
         intersection_y = newX * self.squareHeight()
-        print("intx " , intersection_x , "inty" , intersection_y)
         # calculate the distance from the click to the intersection
         distance = ((x - intersection_x) ** 2 + (y - intersection_y) ** 2) ** 0.5
-        print("distance " , distance)
         # check if the click is within the acceptable radius
         tolerance = min(self.squareWidth(), self.squareHeight()) / 2
-        print("tolerance" , tolerance) 
         if distance <= tolerance:
             # valid click; delegate move logic to tryMove
             if self.tryMove(newX, newY):
@@ -113,7 +109,6 @@ class Board(QFrame):  # base the board on a QFrame widget
     def tryMove(self, newX, newY):
         '''tries to move a piece'''
         # check if the position is within the bounds of the board
-        print("newX " , newX , "self.boardHeight" , self.boardHeight , "newY " , newY , "self.boardWidth" , self.boardWidth)
         if not (0 <= newX <= self.boardHeight and 0 <= newY <= self.boardWidth):
             print(f"Invalid move: Position newX {newX}, newY {newY} is out of bounds")
             return False
@@ -123,7 +118,7 @@ class Board(QFrame):  # base the board on a QFrame widget
             # place the piece (e.g., Black)
             self.boardArray[newX][newY] = Piece.Black
             self.update()  # Repaint the board
-            print(f"Placed Black piece at newX {newX}, newY {newY}")
+            self.printBoardArray()
             return True
         else:
             # if the position is occupied, reject the move
