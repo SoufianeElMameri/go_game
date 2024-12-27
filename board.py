@@ -25,8 +25,13 @@ class Board(QFrame):  # base the board on a QFrame widget
         self.timer.timeout.connect(self.timerEvent)  # connect timeout signal to timerEvent method
         self.isStarted = False  # game is not currently started
         self.start()  # start the game which will start the timer
-        self.player1 = Player("Hamid")
+
+        # CALL THE GREATING FUNCTION HERE 
+        # PUT THE NAME OF THE INPUTS IN THE TWO PLAYER OBJECT
+        self.player1 = Player("Hamid") 
         self.player2 = Player("Reda")
+        #-----------------------------------
+
         self.game_logic = GameLogic(self.player1 , self.player2)
         self.game_logic.assign_pieces()
         self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth+1)] for _ in range(self.boardHeight+1)]  # TODO - create a 2d int/Piece array to store the state of the game
@@ -100,6 +105,24 @@ class Board(QFrame):  # base the board on a QFrame widget
         if distance <= tolerance:
             # valid click; delegate move logic to tryMove
             if self.tryMove(newX, newY):
+                #enemyLocaion = self.game_logic.check_nearbyOp(self.boardArray, newX, newY, self.game_logic.currentPlayer.get_piece())
+                if self.game_logic.check_trap(newX, newY, self.game_logic.getCurrentPlayer().get_piece()):
+                    self.boardArray[newX][newY] = Piece.NoPiece  # Remove the trapped piece immediately
+                else:
+                    # Perform normal capture logic
+                    selfCaptured = self.game_logic.check_selfCapture(self.boardArray,newX, newY, self.game_logic.currentPlayer.get_piece())
+                    captured_pieces = self.game_logic.capture_pieces(self.boardArray, newX, newY, self.game_logic.getCurrentPlayer().get_piece())
+                    print("Pieces captured:", captured_pieces)
+                    print("Pieces captured ", selfCaptured , selfCaptured)
+
+                # Update traps after the move
+                self.game_logic.update_traps(self.boardArray)
+                
+                
+                #captured_groups = self.game_logic.check_capture(self.boardArray, newX, newY, self.game_logic.currentPlayer.get_piece())
+                #self.game_logic.currentPlayer.set_points(len(captured_groups))
+                #print(self.game_logic.currentPlayer.get_points())
+                #self.game_logic.remove_captured_pieces(self.boardArray, captured_groups)
                 self.game_logic.switchTurn()
                 print(f"Valid move at intersection newX {newX}, newY {newY}")
             else:
