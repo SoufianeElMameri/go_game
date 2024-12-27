@@ -139,7 +139,8 @@ class GameLogic:
     def capture_pieces(self, board, last_move_x, last_move_y, player_color):
         """Find and capture all opponent groups surrounded after the last move."""
         opponent_color = Piece.White if player_color == Piece.Black else Piece.Black
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # up, down, left, right
+        # up, down, left, right
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  
         captured_groups = []
 
         # Check adjacent opponent groups
@@ -161,10 +162,11 @@ class GameLogic:
 
         print(f"Debug: Total captured groups: {captured_groups}")
         return captured_groups
-    
+
     def check_selfCapture(self, board, x, y, player_color):
         """
         Check if the newly placed piece completes a larger surround and results in a capture.
+        If the piece placed is an opponent's piece in a trapped space, capture it immediately.
         """
         opponent_color = Piece.White if player_color == Piece.Black else Piece.Black
 
@@ -172,10 +174,14 @@ class GameLogic:
         larger_group = self.find_group(board, x, y, board[x][y])
         print(f"Debug: Larger group found: {larger_group}")
 
-        # Check if this larger group is surrounded by the opponent
+        # Otherwise, check if the larger group is surrounded by the opponent
         if self.is_group_surrounded(board, larger_group, opponent_color):
             print(f"Debug: Larger group is surrounded and will be captured: {larger_group}")
 
+            if board[x][y] == player_color:
+                print(f"Debug: Opponent's piece at ({x}, {y}) is in a trap and will be captured immediately.")
+                board[x][y] = Piece.NoPiece  # Remove the placed opponent piece immediately
+                return -1  # Indicate a self-capture
             # Use the same logic as capture_pieces to clear the board
             for gx, gy in larger_group:
                 board[gx][gy] = Piece.NoPiece  # Clear the captured pieces

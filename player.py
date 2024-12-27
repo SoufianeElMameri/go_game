@@ -23,7 +23,7 @@ class Player:
 
     # Setter for points
     def set_points(self, points):
-        self.points = points
+        self.points+=points
 
     # Getter for time
     def get_time(self):

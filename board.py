@@ -230,17 +230,20 @@ class Board(QFrame):  # base the board on a QFrame widget
             if self.tryMove(newX, newY):
 
                 # Perform normal capture logic
-                selfCaptured = self.game_logic.check_selfCapture(self.boardArray,newX, newY, self.game_logic.currentPlayer.get_piece())
                 captured_pieces = self.game_logic.capture_pieces(self.boardArray, newX, newY, self.game_logic.getCurrentPlayer().get_piece())
+                selfCaptured = self.game_logic.check_selfCapture(self.boardArray,newX, newY, self.game_logic.currentPlayer.get_piece())
+                # if self capture return -1 it mean it was a suicided 
+                if selfCaptured == -1:
+                    print("Self-capture detected. Move is invalid, no points awarded.")
+                    self.boardArray[newX][newY] = Piece.NoPiece  # Undo the move
+                    return  # Abort the move
                 print("Pieces captured:", captured_pieces)
+                self.game_logic.getCurrentPlayer().set_points(len(captured_pieces))
                 print("Pieces captured ", selfCaptured , selfCaptured)
 
-                #captured_groups = self.game_logic.check_capture(self.boardArray, newX, newY, self.game_logic.currentPlayer.get_piece())
-                #self.game_logic.currentPlayer.set_points(len(captured_groups))
-                #print(self.game_logic.currentPlayer.get_points())
-                #self.game_logic.remove_captured_pieces(self.boardArray, captured_groups)
                 self.game_logic.switchTurn()
-                print(f"Valid move at intersection newX {newX}, newY {newY}")
+                self.game_logic.getCurrentPlayer().set_points(len(selfCaptured))
+                print("Current scores: \nPlayer 1" , self.player1.get_points() , "\nPlayer 2 " , self.player2.get_points()  )
             else:
                 print(f"Move failed at intersection newX {newX}, newY {newY}")
         else:
