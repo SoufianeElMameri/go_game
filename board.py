@@ -105,18 +105,12 @@ class Board(QFrame):  # base the board on a QFrame widget
         if distance <= tolerance:
             # valid click; delegate move logic to tryMove
             if self.tryMove(newX, newY):
-                #enemyLocaion = self.game_logic.check_nearbyOp(self.boardArray, newX, newY, self.game_logic.currentPlayer.get_piece())
-                if self.game_logic.check_trap(newX, newY, self.game_logic.getCurrentPlayer().get_piece()):
-                    self.boardArray[newX][newY] = Piece.NoPiece  # Remove the trapped piece immediately
-                else:
-                    # Perform normal capture logic
-                    selfCaptured = self.game_logic.check_selfCapture(self.boardArray,newX, newY, self.game_logic.currentPlayer.get_piece())
-                    captured_pieces = self.game_logic.capture_pieces(self.boardArray, newX, newY, self.game_logic.getCurrentPlayer().get_piece())
-                    print("Pieces captured:", captured_pieces)
-                    print("Pieces captured ", selfCaptured , selfCaptured)
-
-                # Update traps after the move
-                self.game_logic.update_traps(self.boardArray)
+                #enemyLocaion = self.game_logic.check_nearbyOp(self.boardArray, newX, newY, self.game_logic.currentPlayer.get_piece()) 
+                # Perform normal capture logic
+                selfCaptured = self.game_logic.check_selfCapture(self.boardArray,newX, newY, self.game_logic.currentPlayer.get_piece())
+                captured_pieces = self.game_logic.capture_pieces(self.boardArray, newX, newY, self.game_logic.getCurrentPlayer().get_piece())
+                print("Pieces captured:", captured_pieces)
+                print("Pieces captured ", selfCaptured , selfCaptured)
                 
                 
                 #captured_groups = self.game_logic.check_capture(self.boardArray, newX, newY, self.game_logic.currentPlayer.get_piece())

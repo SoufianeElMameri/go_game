@@ -162,4 +162,25 @@ class GameLogic:
         print(f"Debug: Total captured groups: {captured_groups}")
         return captured_groups
     
- 
+    def check_selfCapture(self, board, x, y, player_color):
+        """
+        Check if the newly placed piece completes a larger surround and results in a capture.
+        """
+        opponent_color = Piece.White if player_color == Piece.Black else Piece.Black
+
+        # Find the larger area connected to the placed piece (can include opponent pieces)
+        larger_group = self.find_group(board, x, y, board[x][y])
+        print(f"Debug: Larger group found: {larger_group}")
+
+        # Check if this larger group is surrounded by the opponent
+        if self.is_group_surrounded(board, larger_group, opponent_color):
+            print(f"Debug: Larger group is surrounded and will be captured: {larger_group}")
+
+            # Use the same logic as capture_pieces to clear the board
+            for gx, gy in larger_group:
+                board[gx][gy] = Piece.NoPiece  # Clear the captured pieces
+
+            return larger_group  # Return the list of captured pieces
+
+        print(f"Debug: Larger group is not surrounded.")
+        return []  # No pieces captured
