@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QFrame
+from PyQt6.QtWidgets import QFrame, QDialog, QVBoxLayout, QHBoxLayout, QTextEdit, QLabel, QPushButton
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QPoint
-from PyQt6.QtGui import QPainter, QColor, QBrush
+from PyQt6.QtGui import QPainter, QColor, QBrush, QImage, QPixmap
 from piece import Piece
 from player import Player
 from game_logic import GameLogic
@@ -15,18 +15,145 @@ class Board(QFrame):  # base the board on a QFrame widget
     timerSpeed = 1000  # the timer updates every 1 second
     counter = 10  # the number the counter will count down from
 
+
     def __init__(self, parent):
         super().__init__(parent)
+
+        # player info set up
+        self.player1 = Player("Player1")
+        self.player2 = Player("Player2")
+
+        # great мы names collection
+        self.initDialog()
+
         self.initBoard()
+
+    def initDialog (self):
+        # set up a dialog window
+        dialogWindow = QDialog()
+        dialogWindow.setWindowTitle("Go Game - Project")
+        # set layout
+        layout = QVBoxLayout()
+
+        # horizontal alignment box for text names inputs
+        namesSection = QHBoxLayout()
+
+        # buttons and their class names
+        name1 = QTextEdit("")
+        name1.setPlaceholderText("Player 1")
+        name1.setFixedSize(150, 38)
+        name1.setObjectName("name_input")
+        names_separator = QLabel("vs")
+        name2 = QTextEdit("")
+        name2.setPlaceholderText("Player 2")
+        name2.setObjectName("name_input")
+        name2.setFixedSize(150, 38)
+
+        # add to names box layout
+        namesSection.addWidget(name1)
+        namesSection.addWidget(names_separator, alignment=Qt.AlignmentFlag.AlignCenter)
+        namesSection.addWidget(name2)
+
+        # a label for image
+        imageLabel = QLabel()
+        # path to file
+        greatImage = QImage("icons/game_icon.png")
+        # convertion to a pixmap first then to label to display image
+        pixmap = QPixmap.fromImage(greatImage)
+        pixmap = pixmap.scaled(130, 130, Qt.AspectRatioMode.KeepAspectRatio)
+        imageLabel.setPixmap(pixmap)
+
+        # add QLabel with image to layout with center alignment
+        layout.addWidget(imageLabel, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # welcome center alignment
+        welcome_text_label = QLabel("Welcome")
+        welcome_text_label.setObjectName("welcome_text_label")
+        layout.addWidget(welcome_text_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        desc_label = QLabel("to go game for two person")
+        desc_label.setObjectName("desc_label")
+        layout.addWidget(desc_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # selection of game mode section
+        layout.addWidget(QLabel("Let's get acquainted:"), alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addLayout(namesSection)
+
+        # button section
+        start_btn = QPushButton("Start Game")
+        start_btn.setObjectName("start_btn")
+        # horizontal alignment box for buttons
+        buttonLayout = QHBoxLayout()
+        buttonLayout.addWidget(start_btn)
+        layout.addLayout(buttonLayout)
+
+        dialogWindow.setLayout(layout)
+
+        start_btn.clicked.connect(lambda: self.on_start_button_clicked(dialogWindow, name1, name2))
+
+        # styles for init widget window
+        dialogWindow.setStyleSheet(
+            """
+            QDialog {
+                background-color: white;
+            }
+            QLabel#welcome_text_label {
+                font-size: 40px;
+                font-weight: 700;
+                margin: 20px auto;
+                margin-bottom : -5px;
+            }
+            QPushButton#start_btn{
+                padding: 10px auto;
+                background-color: green;
+                font-size: 15px;
+                font-weight: 600;
+                border-radius: 10%;
+                background-color: rgb(194, 229, 196 );
+                border: 1px solid rgb(179, 211, 180 );
+            }
+            QLabel {
+                font-size:18px;
+            }
+            QLabel#modeWarning {
+                font-size: 10px;
+                font-style: italic;
+                color: rgb(193, 92, 65);
+            }
+            #name_input {
+                font-size: 15px;
+                font-weight: bold;
+                border: 1px solid black;
+                border-radius: 10px;
+                padding: 5px;
+            }
+            #desc_label {
+                margin-top: 0px;
+                margin-bottom: 20px;
+                font-size: 15px;
+            }
+            """
+        )
+        dialogWindow.exec()
+
+    def on_start_button_clicked(self, dialog, name1, name2):
+        if name1.toPlainText() :
+            self.player1.set_name(name1.toPlainText())
+
+        if name2.toPlainText() :
+            self.player2.set_name(name2.toPlainText())
+
+        # print game info to console
+        print(self.player1.get_name() + " vs " + self.player2.get_name())
+        dialog.accept()
 
     def initBoard(self):
         '''initiates board'''
+        print(self.player1)
         self.timer = QTimer(self)  # create a timer for the game
         self.timer.timeout.connect(self.timerEvent)  # connect timeout signal to timerEvent method
         self.isStarted = False  # game is not currently started
         self.start()  # start the game which will start the timer
-        self.player1 = Player("Hamid")
-        self.player2 = Player("Reda")
         self.game_logic = GameLogic(self.player1 , self.player2)
         self.game_logic.assign_pieces()
         self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth+1)] for _ in range(self.boardHeight+1)]  # TODO - create a 2d int/Piece array to store the state of the game
