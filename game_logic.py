@@ -1,5 +1,4 @@
 import random
-from player import Player
 from piece import Piece
 
 class GameLogic:
@@ -16,15 +15,15 @@ class GameLogic:
     # method to assign pieces to players randomly
     def assign_pieces(self):
         '''Randomly assign pieces to two players (one Black, one White)'''
-        # Randomly assign Black and White pieces
         pieces = [Piece.Black, Piece.White]
-        random.shuffle(pieces)  # Shuffle the pieces list to randomize assignment
+        # shuffle the pieces list to randomize assignment
+        random.shuffle(pieces)  
         
-        # Assign pieces to players
+        # assign pieces to players
         self.player1.set_piece(pieces[0])
         self.player2.set_piece(pieces[1])
 
-        # Print out the assigned pieces for debugging
+        # print out the assigned pieces for debugging
         if self.player1.get_piece() == Piece.Black:
             print(f"{self.player1.get_name()} is assigned 'Black'")
             print(f"{self.player2.get_name()} is assigned 'White'")
@@ -33,186 +32,231 @@ class GameLogic:
             print(f"{self.player2.get_name()} is assigned 'Black'")
             print(f"{self.player1.get_name()} is assigned 'White'")
             self.currentPlayer = self.player2
-    # methd to return the currentPlayer's turn
+    # methd to return the currentPlayer
     def getCurrentPlayer(self):
         return self.currentPlayer
     
-    # method to switch the current player's turn
+    # method to switch the current player
     def switchTurn(self):
         if self.currentPlayer == self.player1:
             self.currentPlayer = self.player2
         else:
             self.currentPlayer = self.player1
     
+    # method to search for group of connected pieces using flood-fill algo
     def find_group(self, board, x, y, player_color):
-        """Find all connected pieces of the same color using flood-fill."""
+
         stack = [(x, y)]
         group = []
+        # to track visted points
         visited = set()
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # up, down, left, right
+        # up, down, left, right
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)] 
 
+        # loop until there are no more points to explore
         while stack:
+            # get the current point from the stack
             cx, cy = stack.pop()
+            # check if the points where already visited
             if (cx, cy) in visited:
                 continue
+            # if not visted add them 
             visited.add((cx, cy))
+            # add the new point to the group
             group.append((cx, cy))
+
 
             for dx, dy in directions:
                 nx, ny = cx + dx, cy + dy
+                # checking if the neighboring point is in the bounds and matches the player color
                 if 0 <= nx < len(board) and 0 <= ny < len(board[0]) and board[nx][ny] == player_color:
                     stack.append((nx, ny))
         return group
 
+    # check if a gorup of pieces are surrounded by opponent pieces
     def is_group_surrounded(self, board, group, opponent_color):
-        """Check if a group of pieces is completely surrounded."""
+
+        # up, down, left, right directions
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-        group_set = set(group)  # Convert group to a set for fast lookups
+        # convert the group to a set to search faster
+        group_set = set(group) 
 
         for x, y in group:
+            # check all neighboring points
             for dx, dy in directions:
                 nx, ny = x + dx, y + dy
-                # Check if neighbor is out of bounds
+                # check if the neighboring point is out of bounds
                 if not (0 <= nx < len(board) and 0 <= ny < len(board[0])):
-                    # If out-of-bounds, treat the border as a valid surrounding
                     continue
-                # Skip neighbors that are part of the group
+                #skip the neighboring point if it is part of the group
                 if (nx, ny) in group_set:
                     continue
-                # Check if neighbor is not the opponent's piece
+                # check if the neighboring point is not the opponent's piece
                 if board[nx][ny] != opponent_color:
                     return False
         return True
 
+    # check if a group of pieces has internal space
     def group_has_internal_space(self, board, group):
-        """Check if the group has any internal empty spaces."""
-        visited = set()
+        # directions
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
-        # Flood-fill around the group to find internal spaces
+        # checking each piece in the group
         for x, y in group:
             for dx, dy in directions:
                 nx, ny = x + dx, y + dy
+                # check if the neighboring point is within bounds and is empty
                 if 0 <= nx < len(board) and 0 <= ny < len(board[0]) and board[nx][ny] == Piece.NoPiece:
-                    # Check if the empty space connects to the outside
+                    # check if the empty space connects to the outside
                     if self.is_empty_space_open(board, nx, ny):
-                        return True  # There's an open space connected to the outside
+                        # if there is an empty space return true
+                        return True  
+        # return false no internal space
         return False
+    # check that the group is fully surrounded
     def is_group_fully_surrounded(self, board, group, opponent_color):
-        """Check if a group is fully surrounded without internal space."""
-        # Verify the group is surrounded
+        # checking if the group is surrounded
         if not self.is_group_surrounded(board, group, opponent_color):
             return False
 
-        # Check for internal spaces
+        # if the group is surrounded check if it has internal space
         if self.group_has_internal_space(board, group):
             return False
 
         return True
+    
+    # check if an empty space connects to the board boundary
     def is_empty_space_open(self, board, x, y):
-        """Flood-fill to determine if an empty space connects to the board boundary."""
+        
         stack = [(x, y)]
         visited = set()
+        # directions up, down left right
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
+        # loop until there are no more points to explore
         while stack:
             cx, cy = stack.pop()
+            # check if the point was already visited
             if (cx, cy) in visited:
                 continue
+            # mark the point as visited
             visited.add((cx, cy))
-
+            # explore all neighboring points
             for dx, dy in directions:
                 nx, ny = cx + dx, cy + dy
+                # check if the neighboring point is out of bounds
                 if not (0 <= nx < len(board) and 0 <= ny < len(board[0])):  # Reached board boundary
+                    # out-of-bounds means the empty space is open
                     return True
                 if board[nx][ny] == Piece.NoPiece and (nx, ny) not in visited:
+                    # add the neighboring point to the stack for further exploration
                     stack.append((nx, ny))
-
-        return False  # Empty space is fully enclosed
+        # all empty spaces are fully enclosed
+        return False  
+    
+    # method to capture pieces if possible
     def capture_pieces(self, board, last_move_x, last_move_y, player_color):
-        """Find and capture all opponent groups surrounded after the last move."""
+        # determen the opponent's pieces
         opponent_color = Piece.White if player_color == Piece.Black else Piece.Black
-        # up, down, left, right
+        # directions up, down, left, right
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  
+
+        # list to save all the captured pieces
         captured_groups = []
 
-        # Check adjacent opponent groups
+        # check adjacent opponent groups
         for dx, dy in directions:
             nx, ny = last_move_x + dx, last_move_y + dy
             if 0 <= nx < len(board) and 0 <= ny < len(board[0]) and board[nx][ny] == opponent_color:
                 group = self.find_group(board, nx, ny, opponent_color)
-                #print(f"Debug: Found group: {group}")
+                #print("Found group:" ,group)
                 if self.is_group_fully_surrounded(board, group, player_color):
-                    #print(f"Debug: Group is fully surrounded: {group}")
+                    #print("Group is fully surrounded:" ,group)
                     captured_groups.extend(group)
 
         # Remove captured pieces
         for x, y in captured_groups:
+            # check if there was only one piece captured
             if len(captured_groups) == 1:
+                # check which color was the piece
                 print("only one piece was captured added to its color list")
                 if board[x][y] == Piece.Black:
+                    # add the locations of the piece to the last moves
+                    # to stop repeating moves
                     self.blackLastMoves.append([x,y])
                 elif board[x][y] == Piece.White:
+                    # add the locations of the piece to the last moves
+                    # to stop repeating moves
                     self.whiteLastMoves.append([x,y])
-            #print(f"Debug: Capturing piece at ({x}, {y})")
-            board[x][y] = Piece.NoPiece  # Clear the captured pieces
-        #print(f"Debug: Total captured groups: {captured_groups}")
+            #remove the captured pieces from the board
+            board[x][y] = Piece.NoPiece 
+        # return the captured pieces 
         return captured_groups
 
+    # method to check if the placed pieces causes a self capture
     def check_selfCapture(self, board, x, y, player_color):
-        """
-        Check if the newly placed piece completes a larger surround and results in a capture.
-        If the piece placed is an opponent's piece in a trapped space, capture it immediately.
-        """
+        # determen the opponent's pieces color
         opponent_color = Piece.White if player_color == Piece.Black else Piece.Black
 
-        # Find the larger area connected to the placed piece (can include opponent pieces)
+        # find the larger area connected to the placed piece (can include opponent pieces)
         larger_group = self.find_group(board, x, y, board[x][y])
-        #print(f"Debug: Larger group found: {larger_group}")
+        #print("Larger group found:",  larger_group)
 
-        # Otherwise, check if the larger group is surrounded by the opponent
+        # check if the larger group is surrounded by the opponent
         if self.is_group_surrounded(board, larger_group, opponent_color):
-            #print(f"Debug: Larger group is surrounded and will be captured: {larger_group}")
-
+            # check if the piece to capture is 
             if board[x][y] == player_color:
                 #print(f"Debug: Opponent's piece at ({x}, {y}) is in a trap and will be captured immediately.")
                 board[x][y] = Piece.NoPiece  # Remove the placed opponent piece immediately
                 return -1  # Indicate a self-capture
             # Use the same logic as capture_pieces to clear the board
             for gx, gy in larger_group:
-                board[gx][gy] = Piece.NoPiece  # Clear the captured pieces
+                board[gx][gy] = Piece.NoPiece  
 
-            return larger_group  # Return the list of captured pieces
+            return larger_group 
 
-        #print(f"Debug: Larger group is not surrounded.")
-        return []  # No pieces captured
+        return []  # no pieces captured
     
+    # method to check if a repeating move is made
     def same_move_check(self , x , y , color):
+        # check which color 
         if color == Piece.Black:
+            # check if the current move exist in the last capture of the same color
             for lastX , lastY in self.blackLastMoves:
                 if lastX == x and lastY == y:
                     print("found repeating move for black" , x , y )
+                    # repeating
                     return True
             print("clearing black" )
+            #if not repeating clear the last move
             self.blackLastMoves.clear()
 
         if color == Piece.White:
+            # check if the current move exist in the last capture of the same color
             for lastX , lastY in self.whiteLastMoves:
                 if lastX == x and lastY == y:
                     print("found repeating move for black" , x , y )
+                    # repeating
                     return True
             print("clearing white" )
+            #if not repeating clear the last move
             self.whiteLastMoves.clear()
-        
+        # no reaptition 
         return False
     
+    # method to clear the passes
     def clearPass(self):
         self.passes == 0
+
+    # method to clear the past moves
     def clearMoves(self):
         self.blackLastMoves.clear()
         self.whiteLastMoves.clear()
+    # method to pass the current turn
     def passTurn(self):
         self.passes +=1
+        # if two passes has been made return true to end the game
         if self.passes == 2:
             return True
+        # only one pass has been made continue the game
         return False
