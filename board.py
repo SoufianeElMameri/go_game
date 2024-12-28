@@ -227,23 +227,27 @@ class Board(QFrame):  # base the board on a QFrame widget
         # check if the click is within the acceptable radius
         tolerance = min(self.squareWidth(), self.squareHeight()) / 2
         if distance <= tolerance:
-            # valid click; delegate move logic to tryMove
+            # valid click call try move to validate the move
             if self.tryMove(newX, newY):
+                # since a move has been made clear the previous pass 
                 self.game_logic.clearPass()
-                # Perform normal capture logic
+                # check normal piece capture
                 captured_pieces = self.game_logic.capture_pieces(self.boardArray, newX, newY, self.game_logic.getCurrentPlayer().get_piece())
+                # check self capture
                 selfCaptured = self.game_logic.check_selfCapture(self.boardArray,newX, newY, self.game_logic.currentPlayer.get_piece())
                 # if self capture return -1 it mean it was a suicided 
                 if selfCaptured == -1:
+                    # reject the move
                     print("Self-capture detected. Move is invalid, no points awarded.")
                     self.boardArray[newX][newY] = Piece.NoPiece  # Undo the move
-                    return  # Abort the move
+                    return 
                 print("Pieces captured:", captured_pieces)
+                # update the player's score
                 self.game_logic.getCurrentPlayer().set_capturedPieces(len(captured_pieces))
                 print("Pieces captured ", selfCaptured , selfCaptured)
-
+                # switch the turns
                 self.game_logic.switchTurn()
-                self.game_logic.getCurrentPlayer().set_capturedPieces(len(selfCaptured))
+                # printing scores for debug
                 print("Current scores: \nPlayer 1 captured" , self.player1.get_capturedPieces() , "\nPlayer 2 captured" , self.player2.get_capturedPieces()  )
             else:
                 print(f"Move failed at intersection newX {newX}, newY {newY}")
@@ -275,7 +279,7 @@ class Board(QFrame):  # base the board on a QFrame widget
             self.printBoardArray()
             return True
         else:
-            # if the position is occupied, reject the move
+            # if the position is occupied, or repeating move reject it
             print(f"Invalid move:")
             return False
 
