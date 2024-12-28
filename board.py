@@ -10,8 +10,10 @@ class Board(QFrame):  # base the board on a QFrame widget
     clickLocationSignal = pyqtSignal(str)  # signal sent when there is a new click location
 
     # TODO set the board width and height to be square
-    boardWidth = 7  # board is 0 squares wide # TODO this needs updating
-    boardHeight = 7  #
+    
+    boardWidth = 6  # setting the board to 6 squares = 7 intersection
+    boardHeight = 6 # setting the board to 6 squares = 7 intersection
+
     timerSpeed = 1000  # the timer updates every 1 second
     counter = 10  # the number the counter will count down from
 
@@ -228,7 +230,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         if distance <= tolerance:
             # valid click; delegate move logic to tryMove
             if self.tryMove(newX, newY):
-
+                self.game_logic.clearPass()
                 # Perform normal capture logic
                 captured_pieces = self.game_logic.capture_pieces(self.boardArray, newX, newY, self.game_logic.getCurrentPlayer().get_piece())
                 selfCaptured = self.game_logic.check_selfCapture(self.boardArray,newX, newY, self.game_logic.currentPlayer.get_piece())
@@ -238,12 +240,12 @@ class Board(QFrame):  # base the board on a QFrame widget
                     self.boardArray[newX][newY] = Piece.NoPiece  # Undo the move
                     return  # Abort the move
                 print("Pieces captured:", captured_pieces)
-                self.game_logic.getCurrentPlayer().set_points(len(captured_pieces))
+                self.game_logic.getCurrentPlayer().set_capturedPieces(len(captured_pieces))
                 print("Pieces captured ", selfCaptured , selfCaptured)
 
                 self.game_logic.switchTurn()
-                self.game_logic.getCurrentPlayer().set_points(len(selfCaptured))
-                print("Current scores: \nPlayer 1" , self.player1.get_points() , "\nPlayer 2 " , self.player2.get_points()  )
+                self.game_logic.getCurrentPlayer().set_capturedPieces(len(selfCaptured))
+                print("Current scores: \nPlayer 1 captured" , self.player1.get_capturedPieces() , "\nPlayer 2 captured" , self.player2.capturedPieces()  )
             else:
                 print(f"Move failed at intersection newX {newX}, newY {newY}")
         else:
@@ -252,6 +254,11 @@ class Board(QFrame):  # base the board on a QFrame widget
 
     def resetGame(self):
         '''clears pieces from the board'''
+        self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth+1)] for _ in range(self.boardHeight+1)]
+        self.player1.set_time(2) , self.player2.set_time(2)
+        self.player1.set_capturedPieces(0) , self.player2.set_capturedPieces(0)
+        self.game_logic.clearPass()
+        self.game_logic.clearMoves()
         # TODO write code to reset game
 
     def tryMove(self, newX, newY):
@@ -262,16 +269,15 @@ class Board(QFrame):  # base the board on a QFrame widget
             print(f"Invalid move: Position newX {newX}, newY {newY} is out of bounds")
             return False
 
-        # check if the position is empty
-        if self.boardArray[newX][newY] == Piece.NoPiece:
-            # place the piece (e.g., Black)
+        # check if the position is empty and make sure its not a repeating move
+        if self.boardArray[newX][newY] == Piece.NoPiece and not self.game_logic.same_move_check(newX, newY , self.game_logic.getCurrentPlayer().get_piece()):
             self.boardArray[newX][newY] = self.game_logic.getCurrentPlayer().get_piece()
             self.update()  # Repaint the board
             self.printBoardArray()
             return True
         else:
             # if the position is occupied, reject the move
-            print(f"Invalid move: Cell at newX {newX}, newY {newY} is already occupied")
+            print(f"Invalid move:")
             return False
 
     def drawBoardSquares(self, painter):

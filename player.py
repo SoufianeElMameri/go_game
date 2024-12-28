@@ -4,9 +4,8 @@ class Player:
     def __init__(self, name):
         '''Initializes a player with the given name and default values for points, time, turn, and piece'''
         self.name = name
-        self.points = 0  # Default points
-        self.time = 0  # Default time
-        self.turn = False  # Default turn (False means it's not the player's turn)
+        self.capturedPieces = 0  # Default points
+        self.time = 2  # 2 minutes
         self.piece = Piece.NoPiece  # Assuming Piece class has a 'noPiece' constant
 
     # Getter for name
@@ -18,12 +17,12 @@ class Player:
         self.name = name
 
     # Getter for points
-    def get_points(self):
-        return self.points
+    def get_capturedPieces(self):
+        return self.capturedPieces
 
     # Setter for points
-    def set_points(self, points):
-        self.points+=points
+    def set_capturedPieces(self, points):
+        self.capturedPieces+=points
 
     # Getter for time
     def get_time(self):

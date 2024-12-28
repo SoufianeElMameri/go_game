@@ -9,6 +9,9 @@ class GameLogic:
         self.currentPlayer = None
         self.player1 = player1
         self.player2 = player2
+        self.blackLastMoves = []
+        self.whiteLastMoves = []
+        self.passes = 0
 
     # method to assign pieces to players randomly
     def assign_pieces(self):
@@ -43,7 +46,6 @@ class GameLogic:
     
     def find_group(self, board, x, y, player_color):
         """Find all connected pieces of the same color using flood-fill."""
-        print(f"Debug: find_group called for ({x}, {y}) with player_color={player_color}")
         stack = [(x, y)]
         group = []
         visited = set()
@@ -60,8 +62,6 @@ class GameLogic:
                 nx, ny = cx + dx, cy + dy
                 if 0 <= nx < len(board) and 0 <= ny < len(board[0]) and board[nx][ny] == player_color:
                     stack.append((nx, ny))
-
-        print(f"Debug: Group found: {group}")
         return group
 
     def is_group_surrounded(self, board, group, opponent_color):
@@ -81,10 +81,7 @@ class GameLogic:
                     continue
                 # Check if neighbor is not the opponent's piece
                 if board[nx][ny] != opponent_color:
-                    print(f"Debug: Group not surrounded because ({nx}, {ny}) has value {board[nx][ny]}")
                     return False
-
-        print(f"Debug: Group is surrounded: {group}")
         return True
 
     def group_has_internal_space(self, board, group):
@@ -97,13 +94,9 @@ class GameLogic:
             for dx, dy in directions:
                 nx, ny = x + dx, y + dy
                 if 0 <= nx < len(board) and 0 <= ny < len(board[0]) and board[nx][ny] == Piece.NoPiece:
-                    print(f"Debug: Found internal empty space at ({nx}, {ny})")
                     # Check if the empty space connects to the outside
                     if self.is_empty_space_open(board, nx, ny):
-                        print(f"Debug: Internal empty space at ({nx}, {ny}) is open to the outside")
                         return True  # There's an open space connected to the outside
-
-        print(f"Debug: No internal empty spaces in group: {group}")
         return False
     def is_group_fully_surrounded(self, board, group, opponent_color):
         """Check if a group is fully surrounded without internal space."""
@@ -148,19 +141,22 @@ class GameLogic:
             nx, ny = last_move_x + dx, last_move_y + dy
             if 0 <= nx < len(board) and 0 <= ny < len(board[0]) and board[nx][ny] == opponent_color:
                 group = self.find_group(board, nx, ny, opponent_color)
-                print(f"Debug: Found group: {group}")
+                #print(f"Debug: Found group: {group}")
                 if self.is_group_fully_surrounded(board, group, player_color):
-                    print(f"Debug: Group is fully surrounded: {group}")
+                    #print(f"Debug: Group is fully surrounded: {group}")
                     captured_groups.extend(group)
-                else:
-                    print(f"Debug: Group is not fully surrounded: {group}")
 
         # Remove captured pieces
         for x, y in captured_groups:
-            print(f"Debug: Capturing piece at ({x}, {y})")
+            if len(captured_groups) == 1:
+                print("only one piece was captured added to its color list")
+                if board[x][y] == Piece.Black:
+                    self.blackLastMoves.append([x,y])
+                elif board[x][y] == Piece.White:
+                    self.whiteLastMoves.append([x,y])
+            #print(f"Debug: Capturing piece at ({x}, {y})")
             board[x][y] = Piece.NoPiece  # Clear the captured pieces
-
-        print(f"Debug: Total captured groups: {captured_groups}")
+        #print(f"Debug: Total captured groups: {captured_groups}")
         return captured_groups
 
     def check_selfCapture(self, board, x, y, player_color):
@@ -172,14 +168,14 @@ class GameLogic:
 
         # Find the larger area connected to the placed piece (can include opponent pieces)
         larger_group = self.find_group(board, x, y, board[x][y])
-        print(f"Debug: Larger group found: {larger_group}")
+        #print(f"Debug: Larger group found: {larger_group}")
 
         # Otherwise, check if the larger group is surrounded by the opponent
         if self.is_group_surrounded(board, larger_group, opponent_color):
-            print(f"Debug: Larger group is surrounded and will be captured: {larger_group}")
+            #print(f"Debug: Larger group is surrounded and will be captured: {larger_group}")
 
             if board[x][y] == player_color:
-                print(f"Debug: Opponent's piece at ({x}, {y}) is in a trap and will be captured immediately.")
+                #print(f"Debug: Opponent's piece at ({x}, {y}) is in a trap and will be captured immediately.")
                 board[x][y] = Piece.NoPiece  # Remove the placed opponent piece immediately
                 return -1  # Indicate a self-capture
             # Use the same logic as capture_pieces to clear the board
@@ -188,5 +184,35 @@ class GameLogic:
 
             return larger_group  # Return the list of captured pieces
 
-        print(f"Debug: Larger group is not surrounded.")
+        #print(f"Debug: Larger group is not surrounded.")
         return []  # No pieces captured
+    
+    def same_move_check(self , x , y , color):
+        if color == Piece.Black:
+            for lastX , lastY in self.blackLastMoves:
+                if lastX == x and lastY == y:
+                    print("found repeating move for black" , x , y )
+                    return True
+            print("clearing black" )
+            self.blackLastMoves.clear()
+
+        if color == Piece.White:
+            for lastX , lastY in self.whiteLastMoves:
+                if lastX == x and lastY == y:
+                    print("found repeating move for black" , x , y )
+                    return True
+            print("clearing white" )
+            self.whiteLastMoves.clear()
+        
+        return False
+    
+    def clearPass(self):
+        self.passes == 0
+    def clearMoves(self):
+        self.blackLastMoves.clear()
+        self.whiteLastMoves.clear()
+    def passTurn(self):
+        self.passes +=1
+        if self.passes == 2:
+            return True
+        return False
