@@ -193,7 +193,6 @@ class Board(QFrame):  # base the board on a QFrame widget
     def start(self):
         '''starts game'''
         self.isStarted = True  # set the boolean which determines if the game has started to TRUE
-        self.resetGame()  # reset the game
         #self.timer.start(self.timerSpeed)  # start the timer with the correct speed
         print("start () - timer is started")
 
@@ -245,7 +244,7 @@ class Board(QFrame):  # base the board on a QFrame widget
 
                 self.game_logic.switchTurn()
                 self.game_logic.getCurrentPlayer().set_capturedPieces(len(selfCaptured))
-                print("Current scores: \nPlayer 1 captured" , self.player1.get_capturedPieces() , "\nPlayer 2 captured" , self.player2.capturedPieces()  )
+                print("Current scores: \nPlayer 1 captured" , self.player1.get_capturedPieces() , "\nPlayer 2 captured" , self.player2.get_capturedPieces()  )
             else:
                 print(f"Move failed at intersection newX {newX}, newY {newY}")
         else:
