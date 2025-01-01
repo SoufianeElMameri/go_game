@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QDockWidget, QVBoxLayout, QWidget, QLabel
+from PyQt6.QtWidgets import QDockWidget, QVBoxLayout, QWidget, QLabel, QPushButton
 from PyQt6.QtCore import pyqtSlot
 
 
@@ -22,10 +22,16 @@ class ScoreBoard(QDockWidget):
         self.label_clickLocation = QLabel("Click Location: ")
         self.label_timeRemaining = QLabel("Time remaining: ")
 
+        # create an 'End Game' button
+        self.endGameButton = QPushButton("End Game")
+        self.endGameButton.clicked.connect(self.end_game)
+
         self.mainWidget.setLayout(self.mainLayout)
         self.mainLayout.addWidget(self.label_clickLocation)
         self.mainLayout.addWidget(self.label_timeRemaining)
+        self.mainLayout.addWidget(self.endGameButton)
         self.setWidget(self.mainWidget)
+
 
     def make_connection(self, board):
         '''this handles a signal sent from the board class'''
@@ -47,3 +53,14 @@ class ScoreBoard(QDockWidget):
         self.label_timeRemaining.setText(update)
         print('slot ' + str(timeRemaining))
         # self.redraw()
+
+    def end_game(self):
+        '''calls the calculate_final_scores method from the GameLogic class'''
+        if hasattr(self, 'game_logic'):
+            self.game_logic.calculate_final_scores(self.game_logic.getBoard())
+        else:
+            print("GameLogic instance is not connected to the ScoreBoard.")
+
+    def connect_game_logic(self, game_logic):
+        '''Connects the ScoreBoard to the GameLogic instance.'''
+        self.game_logic = game_logic

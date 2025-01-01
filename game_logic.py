@@ -11,6 +11,7 @@ class GameLogic:
         self.blackLastMoves = []
         self.whiteLastMoves = []
         self.passes = 0
+        self.board = []
 
     # method to assign pieces to players randomly
     def assign_pieces(self):
@@ -32,6 +33,13 @@ class GameLogic:
             print(f"{self.player2.get_name()} is assigned 'Black'")
             print(f"{self.player1.get_name()} is assigned 'White'")
             self.currentPlayer = self.player2
+
+    def getBoard(self):
+        return self.board
+    
+    def setBoard(self, newBoard):
+        self.board = newBoard
+    
     # methd to return the currentPlayer
     def getCurrentPlayer(self):
         return self.currentPlayer
@@ -260,3 +268,46 @@ class GameLogic:
             return True
         # only one pass has been made continue the game
         return False
+    
+
+    # method to calculate the final score for each player
+    def calculate_final_scores(self, board):
+
+        # Initialize territory counts
+        white_territory = 0
+        black_territory = 0
+
+        # Visited set to track processed points
+        visited = set()
+
+        for x in range(len(board)):
+            for y in range(len(board[0])):
+                if board[x][y] == 0 and (x, y) not in visited:
+                    # Use the existing find_group method to get connected empty spaces
+                    group = self.find_group(board, x, y, 0)
+                    visited.update(group)  # Mark group as visited
+
+                    # Use is_group_surrounded to determine if the group is surrounded by one color
+                    if self.is_group_surrounded(board, group, 1):
+                        white_territory += len(group)
+                    elif self.is_group_surrounded(board, group, 2):
+                        black_territory += len(group)
+
+        # Calculate final scores
+        print(self.player1.get_capturedPieces())
+        print(self.player2.get_capturedPieces())
+        print(white_territory , sum(row.count(1) for row in board))
+        player1_score = white_territory + self.player1.get_capturedPieces() + sum(row.count(1) for row in board)
+        player2_score = black_territory + self.player2.get_capturedPieces()+ sum(row.count(2) for row in board)
+
+        # Update player objects
+        if self.player1.get_piece() == Piece.White:
+            self.player1.set_finalScore(player1_score)
+            self.player2.set_finalScore(player2_score)
+        else:
+            self.player1.set_finalScore(player2_score) 
+            self.player2.set_finalScore(player1_score) 
+
+        # Print the final scores for debugging
+        print(f"{self.player1.get_name()} {self.player1.get_piece()} {self.player1.get_finalScore()}")
+        print(f"{self.player2.get_name()} {self.player2.get_piece()} {self.player2.get_finalScore()}")

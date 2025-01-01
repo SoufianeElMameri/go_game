@@ -5,6 +5,7 @@ class Player:
         '''Initializes a player with the given name and default values for points, time, turn, and piece'''
         self.name = name
         self.capturedPieces = 0  # Default points
+        self.finalScore = 0
         self.time = 2  # 2 minutes
         self.piece = Piece.NoPiece  # Assuming Piece class has a 'noPiece' constant
 
@@ -51,3 +52,11 @@ class Player:
             self.piece = piece
         else:
             print(f"Invalid piece value: {piece}. Must be one of: NoPiece, White, Black.")
+
+    # Getter for finalscore
+    def get_finalScore(self):
+        return self.finalScore
+
+    # Setter for finalscore
+    def set_finalScore(self, score):
+        self.finalScore = score
