@@ -1,7 +1,7 @@
 
-from PyQt6.QtGui import QImage, QPixmap
+from PyQt6.QtGui import QImage, QPixmap, QIcon
 from PyQt6.QtWidgets import QDockWidget, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QPushButton, QDialog
-from PyQt6.QtCore import pyqtSlot, Qt
+from PyQt6.QtCore import pyqtSlot, Qt, QSize
 from board import Board
 
 
@@ -36,8 +36,15 @@ class ScoreBoard(QDockWidget):
         # self.label_timeRemaining = QLabel("Time remaining: ")
 
         # elements to info section
-        self.info_btn = QPushButton("Rules")
-        self.how_to_btn = QPushButton("Help")
+        self.info_btn = QPushButton()
+        self.info_btn.setIcon(QIcon("icons/info_icon.png"))
+        self.info_btn.setObjectName("info_btn")
+        self.info_btn.setIconSize(QSize(15,15))
+
+        self.how_to_btn = QPushButton()
+        self.how_to_btn.setIcon(QIcon("icons/help_icon.png"))
+        self.how_to_btn.setObjectName("how_to_btn")
+        self.how_to_btn.setIconSize(QSize(15, 15))
 
         # elements to a score board
         self.player1_name_label = QLabel(f"{self.board.player1.get_name()}")
@@ -48,8 +55,10 @@ class ScoreBoard(QDockWidget):
         self.player2_time_label = QLabel(f"{self.board.player2.get_time()}")
         self.player2_score_label = QLabel(f"{self.board.player2.get_capturedPieces()}")
 
+        self.infoSection.addStretch()
         self.infoSection.addWidget(self.info_btn)
         self.infoSection.addWidget(self.how_to_btn)
+        self.infoSection.addStretch()
 
         self.player1_section.addWidget(self.player1_name_label)
         self.player1_section.addWidget(self.player1_time_label)
@@ -79,14 +88,158 @@ class ScoreBoard(QDockWidget):
         self.setWidget(self.mainWidget)
 
         # listeners for buttons
+        self.info_btn.clicked.connect(lambda: self.show_rules())
+        self.how_to_btn.clicked.connect(lambda: self.show_help())
         self.reset_btn.clicked.connect(lambda: self.board.resetGame())
         self.finish_btn.clicked.connect(lambda: self.show_finish_result())
         self.reset_btn.clicked.connect(lambda: self.pass_turn())
+
+        # styles
+        self.setStyleSheet("""
+            QWidget {
+                width: 150px;
+                background-color: white;
+            }
+            QPushButton {
+                padding: 10px 20px;
+                border: 1px solid gray;
+                font-size: 15px;
+                border-radius: 10%;
+            }
+            QPushButton#info_btn, QPushButton#how_to_btn {
+                width: auto;
+                border: none;
+            }
+        """)
 
     def pass_turn(self):
         # TODO
         pass
 
+    def show_rules(self):
+        # set a dialog window
+        rules = QDialog()
+        # set a title for window
+        rules.setWindowTitle("Rules")
+        # init layout
+        layout = QVBoxLayout()
+        # a label for image
+        imageLabel = QLabel()
+        # path to file
+        greatImage = QImage("icons/rules_icon.png")
+        # convertion to a pixmap first then to label to display image
+        pixmap = QPixmap.fromImage(greatImage)
+        pixmap = pixmap.scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio)
+        imageLabel.setPixmap(pixmap)
+
+        # add QLabel with image to layout with center alignment
+        layout.addWidget(imageLabel, alignment=Qt.AlignmentFlag.AlignCenter)
+        # adding labels
+        logic_label = QLabel("The main game rules:")
+        logic_label.setObjectName("logic_label")
+        layout.addWidget(logic_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(QLabel("1. Black plays first, with black and white taking turns."))
+        layout.addWidget(QLabel("2. A stone can be placed at any unoccupied intersection of the board with limited exceptions."))
+        layout.addWidget(QLabel("3. Stones are captured and removed from the board when surrounded on all four sides by the opponent’s stones."))
+        layout.addWidget(QLabel("4. Suicide Rule: A stone cannot be placed in a position where it has no liberties (empty adjacent points), unless it captures opposing stones."))
+        layout.addWidget(QLabel("5. Ko Rule: A move that recreates the exact same board position from the previous turn is not allowed."))
+        layout.addWidget(QLabel("6. Players aim to surround and control empty intersections to claim territory."))
+        layout.addWidget(QLabel("7. The game ends when both players pass consecutively, signaling no more useful moves."))
+        layout.addWidget(QLabel("8. Players count controlled empty intersections and captured stones to determine the winner."))
+        last_label = QLabel("8. Players count controlled empty intersections and captured stones to determine the winner.")
+        # class for last label to add spacing after
+        last_label.setObjectName("last_label")
+        layout.addWidget(last_label)
+        # set layout
+        rules.setLayout(layout)
+        # add styles
+        rules.setStyleSheet(
+            """
+            QDialog {
+                background-color: white;
+            }
+            #logic_label {
+                font-size: 30px;
+                font-weight: bold;
+                margin-bottom: 20px;
+            }
+            QLabel {
+                font-size: 15px;
+                margin-top: 5px;
+            }
+            #last_label {
+                margin-bottom: 20px;
+            }
+            """
+        )
+        # execute dialog window
+        rules.exec()
+
+    def show_help(self):
+        # set a dialog window
+        help = QDialog()
+        # set a title for window
+        help.setWindowTitle("Help")
+        # init layout
+        layout = QVBoxLayout()
+        # a label for image
+        imageLabel = QLabel()
+        # path to file
+        greatImage = QImage("icons/faq_icon.png")
+        # convertion to a pixmap first then to label to display image
+        pixmap = QPixmap.fromImage(greatImage)
+        pixmap = pixmap.scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio)
+        imageLabel.setPixmap(pixmap)
+
+        # add QLabel with image to layout with center alignment
+        layout.addWidget(imageLabel, alignment=Qt.AlignmentFlag.AlignCenter)
+        # adding labels
+        logic_label = QLabel("Frequently asked questions")
+        logic_label.setObjectName("logic_label")
+        layout.addWidget(logic_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(QLabel("1. Black plays first, with black and white taking turns."))
+        layout.addWidget(
+            QLabel("2. A stone can be placed at any unoccupied intersection of the board with limited exceptions."))
+        layout.addWidget(QLabel(
+            "3. Stones are captured and removed from the board when surrounded on all four sides by the opponent’s stones."))
+        layout.addWidget(QLabel(
+            "4. Suicide Rule: A stone cannot be placed in a position where it has no liberties (empty adjacent points), unless it captures opposing stones."))
+        layout.addWidget(QLabel(
+            "5. Ko Rule: A move that recreates the exact same board position from the previous turn is not allowed."))
+        layout.addWidget(QLabel("6. Players aim to surround and control empty intersections to claim territory."))
+        layout.addWidget(
+            QLabel("7. The game ends when both players pass consecutively, signaling no more useful moves."))
+        layout.addWidget(
+            QLabel("8. Players count controlled empty intersections and captured stones to determine the winner."))
+        last_label = QLabel(
+            "8. Players count controlled empty intersections and captured stones to determine the winner.")
+        # class for last label to add spacing after
+        last_label.setObjectName("last_label")
+        layout.addWidget(last_label)
+        # set layout
+        help.setLayout(layout)
+        # add styles
+        help.setStyleSheet(
+            """
+            QDialog {
+                background-color: white;
+            }
+            #logic_label {
+                font-size: 30px;
+                font-weight: bold;
+                margin-bottom: 20px;
+            }
+            QLabel {
+                font-size: 15px;
+                margin-top: 5px;
+            }
+            #last_label {
+                margin-bottom: 20px;
+            }
+            """
+        )
+        # execute dialog window
+        help.exec()
 
     def make_connection(self, board):
         '''this handles a signal sent from the board class'''
