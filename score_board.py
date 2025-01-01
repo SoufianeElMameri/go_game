@@ -13,6 +13,10 @@ class ScoreBoard(QDockWidget):
         self.board = board
         self.initUI()
 
+        # Connect player timerExpiredSignal to the handle_timer_expired slot
+        self.board.player1.timerExpiredSignal.connect(lambda name: self.handle_timer_expired(self.board.player1))
+        self.board.player2.timerExpiredSignal.connect(lambda name: self.handle_timer_expired(self.board.player2))
+
     def initUI(self):
         '''initiates ScoreBoard UI'''
         self.resize(200, 200)
@@ -80,7 +84,7 @@ class ScoreBoard(QDockWidget):
 
         # listeners for buttons
         self.reset_btn.clicked.connect(lambda: self.board.resetGame())
-        self.pass_turn_btn.clicked.connect(lambda: self.show_finish_result())
+        self.pass_turn_btn.clicked.connect(lambda: self.show_finish_result(-1))
 
 
     def make_connection(self, board):
@@ -128,9 +132,9 @@ class ScoreBoard(QDockWidget):
         # self.redraw()
 
 
-    def show_finish_result(self):
+    def show_finish_result(self, player):
         # check if both players passed their turns
-        if self.game_logic.passTurn():
+        if self.board.game_logic.passTurn() or player != -1:
 
             self.end_game()
             dialogWindow = QDialog()
@@ -153,13 +157,17 @@ class ScoreBoard(QDockWidget):
             # decide who have more scores
             score_player_1 = self.board.player1.get_finalScore()
             score_player_2 = self.board.player2.get_finalScore()
-            winner = self.board.player1 if score_player_1 > score_player_2 else self.board.player2 if score_player_2 > score_player_1 else 0
-            # show corresponding result
-            if winner == 0:
-                layout.addWidget(QLabel("Friendship wins"), alignment=Qt.AlignmentFlag.AlignCenter)
+            if player!= -1:
+                layout.addWidget(QLabel(player.get_name() + " won"), alignment=Qt.AlignmentFlag.AlignCenter)
+                layout.addWidget(QLabel("Score :" + str(player.get_finalScore())), alignment=Qt.AlignmentFlag.AlignCenter)
             else:
-                layout.addWidget(QLabel(winner.get_name() + " won"), alignment=Qt.AlignmentFlag.AlignCenter)
-                layout.addWidget(QLabel("Score :" + str(winner.get_finalScore())), alignment=Qt.AlignmentFlag.AlignCenter)
+                winner = self.board.player1 if score_player_1 > score_player_2 else self.board.player2 if score_player_2 > score_player_1 else 0
+                # show corresponding result
+                if winner == 0:
+                    layout.addWidget(QLabel("Friendship wins"), alignment=Qt.AlignmentFlag.AlignCenter)
+                else:
+                    layout.addWidget(QLabel(winner.get_name() + " won"), alignment=Qt.AlignmentFlag.AlignCenter)
+                    layout.addWidget(QLabel("Score :" + str(winner.get_finalScore())), alignment=Qt.AlignmentFlag.AlignCenter)
 
             btn_restart = QPushButton("Restart")
             btn_restart.setObjectName("restart_game_btn")
@@ -218,3 +226,6 @@ class ScoreBoard(QDockWidget):
         '''Connects the ScoreBoard to the GameLogic instance.'''
         self.game_logic = game_logic
 
+    def handle_timer_expired(self, player):
+        print(f"{player.get_name()} ran out of time. Ending game.")
+        self.show_finish_result(player)
