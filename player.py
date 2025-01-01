@@ -3,6 +3,7 @@ from PyQt6.QtCore import QTimer, pyqtSignal, QObject
 
 class Player(QObject):
     timerExpiredSignal = pyqtSignal(str) 
+    timerUpdateSignal = pyqtSignal(str, int)
     def __init__(self, name):
         '''Initializes a player with the given name and default values for points, time, turn, and piece'''
         super().__init__()
@@ -70,28 +71,28 @@ class Player(QObject):
     def set_finalScore(self, score):
         self.finalScore = score
 
+    # method to start the player's timer
     def startTimer(self):
-        '''Starts the timer to decrement time every second.'''
-        print(f"{self.name}'s timer started with {self.time} seconds remaining.")
         if not self.timer_running:
             self.timer_running = True
             self._decrement_time()
 
+    # method to stop the player's timer
     def stopTimer(self):
-        '''Stops the timer for the player.'''
-        print(f"{self.name}'s timer stopped.")
         self.timer_running = False
 
+    # method to decrement the timer and signal ui update
     def _decrement_time(self):
-        '''Decrements the player's time and re-triggers itself every second.'''
         if not self.timer_running:
-            return  # If the timer is stopped, exit the function
+             # if the timer is stopped, exit the function
+            return 
 
         if self.time > 0:
             self.time -= 1
-            print(f"{self.name}'s remaining time: {self.time} seconds")
-            QTimer.singleShot(1000, self._decrement_time)  # Re-call this function after 1 second
+            self.timerUpdateSignal.emit(self.name, self.time)
+            # recursive call every second
+            QTimer.singleShot(1000, self._decrement_time) 
         else:
-            print(f"{self.name}'s time is up!")
+            # time ran out signal expiration
             self.timer_running = False
-            self.timerExpiredSignal.emit(self.name)  # Notify that the player's time has expired
+            self.timerExpiredSignal.emit(self.name) 

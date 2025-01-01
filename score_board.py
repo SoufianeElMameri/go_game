@@ -14,8 +14,12 @@ class ScoreBoard(QDockWidget):
         self.initUI()
 
         # Connect player timerExpiredSignal to the handle_timer_expired slot
-        self.board.player1.timerExpiredSignal.connect(lambda name: self.handle_timer_expired(self.board.player1))
-        self.board.player2.timerExpiredSignal.connect(lambda name: self.handle_timer_expired(self.board.player2))
+        self.board.player1.timerExpiredSignal.connect(lambda name: self.handle_timer_expired(self.board.player2))
+        self.board.player2.timerExpiredSignal.connect(lambda name: self.handle_timer_expired(self.board.player1))
+
+        # Connect players' signals to update the UI
+        self.board.player1.timerUpdateSignal.connect(self.update_timer)
+        self.board.player2.timerUpdateSignal.connect(self.update_timer)
 
     def initUI(self):
         '''initiates ScoreBoard UI'''
@@ -45,11 +49,11 @@ class ScoreBoard(QDockWidget):
 
         # elements to a score board
         self.player1_name_label = QLabel(f"{self.board.player1.get_name()}")
-        self.player1_time_label = QLabel(f"{self.board.player1.get_time()}")
+        self.player1_time_label = QLabel(f"{self.board.player1.get_time()} seconds")
         self.player1_score_label = QLabel(f"{self.board.player1.get_capturedPieces()}")
 
         self.player2_name_label = QLabel(f"{self.board.player2.get_name()}")
-        self.player2_time_label = QLabel(f"{self.board.player2.get_time()}")
+        self.player2_time_label = QLabel(f"{self.board.player2.get_time()} seconds")
         self.player2_score_label = QLabel(f"{self.board.player2.get_capturedPieces()}")
 
         self.infoSection.addWidget(self.info_btn)
@@ -91,9 +95,6 @@ class ScoreBoard(QDockWidget):
         '''this handles a signal sent from the board class'''
         # when the clickLocationSignal is emitted in board the setClickLocation slot receives it
         board.clickLocationSignal.connect(self.setClickLocation)
-        # when the updateTimerSignal is emitted in the board the setTimeRemaining slot receives it
-        board.updateTimerSignal.connect(self.setTimeRemaining)
-
     def update_ui(self):
         # update turn labels
         if self.board.player1.get_turn() == 1:
@@ -115,21 +116,18 @@ class ScoreBoard(QDockWidget):
             print("Changed 2")
 
         # update timer labels
-
+    def update_timer(self, player_name, time_left):
+        # find which player to update his timer
+        if player_name == self.board.player1.get_name():
+            self.player1_time_label.setText(f"{time_left} seconds")
+        elif player_name == self.board.player2.get_name():
+            self.player2_time_label.setText(f"{time_left} seconds")
 
     @pyqtSlot(str)  # checks to make sure that the following slot is receiving an argument of the type 'int'
     def setClickLocation(self, clickLoc):
         '''updates the label to show the click location'''
         self.label_clickLocation.setText("Click Location: " + clickLoc)
         #print('slot ' + clickLoc)
-
-    @pyqtSlot(int)
-    def setTimeRemaining(self, timeRemaining):
-        '''updates the time remaining label to show the time remaining'''
-        update = "Time Remaining: " + str(timeRemaining)
-        self.label_timeRemaining.setText(update)
-        print('slot ' + str(timeRemaining))
-        # self.redraw()
 
 
     def show_finish_result(self, player):

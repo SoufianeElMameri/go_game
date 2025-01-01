@@ -1,7 +1,8 @@
 import random
 from piece import Piece
-
-class GameLogic:
+from PyQt6.QtCore import QObject, pyqtSignal
+class GameLogic(QObject):
+    timerUpdateSignal = pyqtSignal()
     def __init__(self, player1 , player2):
         '''Initializes the GameLogic object'''
         print("Game Logic Object Created")
