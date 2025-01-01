@@ -22,7 +22,9 @@ class Go(QMainWindow):
         self.board = Board(self)
         self.setCentralWidget(self.board)
 
-        self.scoreBoard = ScoreBoard(self.board)
+        self.scoreBoard = ScoreBoard()
+        self.scoreBoard.connect_game_logic(self.board.game_logic) 
+        
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.scoreBoard)
         self.scoreBoard.make_connection(self.board)
 

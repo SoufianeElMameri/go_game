@@ -1,7 +1,9 @@
+
 from PyQt6.QtGui import QImage, QPixmap
 from PyQt6.QtWidgets import QDockWidget, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QPushButton, QDialog
 from PyQt6.QtCore import pyqtSlot, Qt
 from board import Board
+
 
 class ScoreBoard(QDockWidget):
     '''# base the score_board on a QDockWidget'''
@@ -87,6 +89,7 @@ class ScoreBoard(QDockWidget):
         # TODO
         pass
 
+
     def make_connection(self, board):
         '''this handles a signal sent from the board class'''
         # when the clickLocationSignal is emitted in board the setClickLocation slot receives it
@@ -130,6 +133,7 @@ class ScoreBoard(QDockWidget):
         self.label_timeRemaining.setText(update)
         print('slot ' + str(timeRemaining))
         # self.redraw()
+
 
     def show_finish_result(self):
         dialogWindow = QDialog()
@@ -204,3 +208,15 @@ class ScoreBoard(QDockWidget):
         dialogWindow.exec()
 
         self.close()
+
+    def end_game(self):
+        '''calls the calculate_final_scores method from the GameLogic class'''
+        if hasattr(self, 'game_logic'):
+            self.game_logic.calculate_final_scores(self.game_logic.getBoard())
+        else:
+            print("GameLogic instance is not connected to the ScoreBoard.")
+
+    def connect_game_logic(self, game_logic):
+        '''Connects the ScoreBoard to the GameLogic instance.'''
+        self.game_logic = game_logic
+
