@@ -343,7 +343,7 @@ class ScoreBoard(QDockWidget):
             layout.addLayout(buttonSection)
 
             btn_restart.clicked.connect(lambda: self.board.resetGame())
-            button.clicked.connect(dialogWindow.accept)
+            button.clicked.connect(lambda: (self.board.endGame(), dialogWindow.accept()))
 
             dialogWindow.setLayout(layout)
             # st styles

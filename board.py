@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QFrame, QDialog, QVBoxLayout, QHBoxLayout, QTextEdit, QLabel, QPushButton
+from PyQt6.QtWidgets import QFrame, QDialog, QVBoxLayout, QHBoxLayout, QTextEdit, QLabel, QPushButton, QApplication
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QPoint
 from PyQt6.QtGui import QPainter, QColor, QBrush, QImage, QPixmap
 from piece import Piece
@@ -393,3 +393,5 @@ class Board(QFrame):  # base the board on a QFrame widget
                 )
 
                 painter.restore()
+    def endGame(self):
+        QApplication.quit()
