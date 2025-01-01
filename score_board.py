@@ -153,12 +153,13 @@ class ScoreBoard(QDockWidget):
             # decide who have more scores
             score_player_1 = self.board.player1.get_finalScore()
             score_player_2 = self.board.player2.get_finalScore()
-            winer = 1 if score_player_1 > score_player_2 else 2 if score_player_2 > score_player_1 else 0
+            winner = self.board.player1 if score_player_1 > score_player_2 else self.board.player2 if score_player_2 > score_player_1 else 0
             # show corresponding result
-            if winer == 0:
+            if winner == 0:
                 layout.addWidget(QLabel("Friendship wins"), alignment=Qt.AlignmentFlag.AlignCenter)
             else:
-                layout.addWidget(QLabel("PLayer " + str(winer) + " won"), alignment=Qt.AlignmentFlag.AlignCenter)
+                layout.addWidget(QLabel(winner.get_name() + " won"), alignment=Qt.AlignmentFlag.AlignCenter)
+                layout.addWidget(QLabel("Score :" + str(winner.get_finalScore())), alignment=Qt.AlignmentFlag.AlignCenter)
 
             btn_restart = QPushButton("Restart")
             btn_restart.setObjectName("restart_game_btn")
