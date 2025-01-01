@@ -80,7 +80,7 @@ class ScoreBoard(QDockWidget):
 
         # listeners for buttons
         self.reset_btn.clicked.connect(lambda: self.board.resetGame())
-        self.reset_btn.clicked.connect(lambda: self.board.game_logic.passTurn())
+        self.pass_turn_btn.clicked.connect(lambda: self.show_finish_result())
 
 
     def make_connection(self, board):
@@ -129,79 +129,82 @@ class ScoreBoard(QDockWidget):
 
 
     def show_finish_result(self):
-        self.end_game()
-        dialogWindow = QDialog()
-        layout = QVBoxLayout()
+        # check if both players passed their turns
+        if self.game_logic.passTurn():
 
-        # a label for image
-        imageLabel = QLabel()
-        # path to file
-        greatImage = QImage("icons/finish_icon.png")
-        # convertion to a pixmap first then to label to display image
-        pixmap = QPixmap.fromImage(greatImage)
-        pixmap = pixmap.scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio)
-        imageLabel.setPixmap(pixmap)
-        # add QLabel with image to layout with center alignment
-        layout.addWidget(imageLabel, alignment=Qt.AlignmentFlag.AlignCenter)
+            self.end_game()
+            dialogWindow = QDialog()
+            layout = QVBoxLayout()
 
-        game_over_label = QLabel("Game is over")
-        game_over_label.setObjectName("game_over_label")
-        layout.addWidget(game_over_label, alignment=Qt.AlignmentFlag.AlignCenter)
-        # decide who have more scores
-        score_player_1 = self.board.player1.get_finalScore
-        score_player_2 = self.board.player2.get_finalScore
-        winer = 1 if score_player_1 > score_player_2 else 2 if score_player_2 > score_player_1 else 0
-        # show corresponding result
-        if winer == 0:
-            layout.addWidget(QLabel("Friendship wins"), alignment=Qt.AlignmentFlag.AlignCenter)
-        else:
-            layout.addWidget(QLabel("PLayer " + str(winer) + " won"), alignment=Qt.AlignmentFlag.AlignCenter)
+            # a label for image
+            imageLabel = QLabel()
+            # path to file
+            greatImage = QImage("icons/finish_icon.png")
+            # convertion to a pixmap first then to label to display image
+            pixmap = QPixmap.fromImage(greatImage)
+            pixmap = pixmap.scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio)
+            imageLabel.setPixmap(pixmap)
+            # add QLabel with image to layout with center alignment
+            layout.addWidget(imageLabel, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        btn_restart = QPushButton("Restart")
-        btn_restart.setObjectName("restart_game_btn")
+            game_over_label = QLabel("Game is over")
+            game_over_label.setObjectName("game_over_label")
+            layout.addWidget(game_over_label, alignment=Qt.AlignmentFlag.AlignCenter)
+            # decide who have more scores
+            score_player_1 = self.board.player1.get_finalScore()
+            score_player_2 = self.board.player2.get_finalScore()
+            winer = 1 if score_player_1 > score_player_2 else 2 if score_player_2 > score_player_1 else 0
+            # show corresponding result
+            if winer == 0:
+                layout.addWidget(QLabel("Friendship wins"), alignment=Qt.AlignmentFlag.AlignCenter)
+            else:
+                layout.addWidget(QLabel("PLayer " + str(winer) + " won"), alignment=Qt.AlignmentFlag.AlignCenter)
 
-        button = QPushButton("Close")
+            btn_restart = QPushButton("Restart")
+            btn_restart.setObjectName("restart_game_btn")
 
-        buttonSection = QHBoxLayout()
-        buttonSection.addWidget(btn_restart)
-        buttonSection.addWidget(button)
+            button = QPushButton("Close")
 
-        layout.addLayout(buttonSection)
+            buttonSection = QHBoxLayout()
+            buttonSection.addWidget(btn_restart)
+            buttonSection.addWidget(button)
 
-        btn_restart.clicked.connect(lambda: self.board.resetGame())
-        button.clicked.connect(dialogWindow.accept)
+            layout.addLayout(buttonSection)
 
-        dialogWindow.setLayout(layout)
-        # st styles
-        dialogWindow.setStyleSheet(
-            """
-            QDialog {
-                background-color: white;
-            }
-            QPushButton{
-                margin-top: 20px;
-                padding: 10px auto;
-                background-color: white;
-                font-size: 15px;
-                border: 1px solid gray;
-                border-radius: 10%;
-            }
-            QLabel {
-                font-size:18px;
-            }
-            #game_over_label {
-                font-size:20px;
-                margin-bottom: 20px;
-                font-weight: bold;
-            }
-            #restart_game_btn {
-                background-color: rgb(250, 241, 202);
-            }
-            """
-        )
-        dialogWindow.exec()
+            btn_restart.clicked.connect(lambda: self.board.resetGame())
+            button.clicked.connect(dialogWindow.accept)
 
-        self.close()
+            dialogWindow.setLayout(layout)
+            # st styles
+            dialogWindow.setStyleSheet(
+                """
+                QDialog {
+                    background-color: white;
+                }
+                QPushButton{
+                    margin-top: 20px;
+                    padding: 10px auto;
+                    background-color: white;
+                    font-size: 15px;
+                    border: 1px solid gray;
+                    border-radius: 10%;
+                }
+                QLabel {
+                    font-size:18px;
+                }
+                #game_over_label {
+                    font-size:20px;
+                    margin-bottom: 20px;
+                    font-weight: bold;
+                }
+                #restart_game_btn {
+                    background-color: rgb(250, 241, 202);
+                }
+                """
+            )
+            dialogWindow.exec()
+
+            self.close()
 
     def end_game(self):
         '''calls the calculate_final_scores method from the GameLogic class'''
