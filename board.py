@@ -257,15 +257,6 @@ class Board(QFrame):  # base the board on a QFrame widget
         #self.timer.start(self.timerSpeed)  # start the timer with the correct speed
         print("start () - timer is started")
 
-    def timerEvent(self):
-        '''this event is automatically called when the timer is updated. based on the timerSpeed variable '''
-        # TODO adapt this code to handle your timers
-        if Board.counter == 0:
-            print("Game over")
-        self.counter -= 1
-        #print('timerEvent()', self.counter)
-        self.updateTimerSignal.emit(self.counter)
-
     def paintEvent(self, event):
         '''paints the board and the pieces of the game'''
         painter = QPainter(self)
@@ -325,12 +316,15 @@ class Board(QFrame):  # base the board on a QFrame widget
     def resetGame(self):
         '''clears pieces from the board'''
         self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth+1)] for _ in range(self.boardHeight+1)]
-        self.player1.set_time(2) , self.player2.set_time(2)
-        self.player1.set_capturedPieces(0) , self.player2.set_capturedPieces(0)
+        self.player1.reset()
+        self.player2.reset()
+        self.game_logic = GameLogic(self.player1 , self.player2)
         self.game_logic.clearPass()
         self.game_logic.clearMoves()
-        # TODO write code to reset game
+        
+        self.game_logic.assign_pieces()
 
+        print("game restarted")
     def tryMove(self, newX, newY):
         '''tries to move a piece'''
         

@@ -342,7 +342,7 @@ class ScoreBoard(QDockWidget):
 
             layout.addLayout(buttonSection)
 
-            btn_restart.clicked.connect(lambda: self.board.resetGame())
+            btn_restart.clicked.connect(lambda: (self.board.resetGame(), dialogWindow.accept()))
             button.clicked.connect(lambda: (self.board.endGame(), dialogWindow.accept()))
 
             dialogWindow.setLayout(layout)
@@ -374,8 +374,6 @@ class ScoreBoard(QDockWidget):
                 """
             )
             dialogWindow.exec()
-
-            self.close()
 
     def end_game(self):
         '''calls the calculate_final_scores method from the GameLogic class'''
