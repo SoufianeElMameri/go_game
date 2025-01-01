@@ -86,10 +86,10 @@ class Board(QFrame):  # base the board on a QFrame widget
 
         # levels button section
         layout.addWidget(QLabel("Select a game mode:"), alignment=Qt.AlignmentFlag.AlignCenter)
-        timed_level_btn = QPushButton("With timers")
+        timed_level_btn = QPushButton("Speed GO")
         timed_level_btn.setObjectName("timed_level_btn")
 
-        general_level_btn = QPushButton("No timers")
+        general_level_btn = QPushButton("Normal Go")
         general_level_btn.setObjectName("general_level_btn")
         # horizontal alignment box for buttons
         levels_buttonLayout = QHBoxLayout()
@@ -219,6 +219,9 @@ class Board(QFrame):  # base the board on a QFrame widget
         self.game_logic.assign_pieces()
         self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth+1)] for _ in range(self.boardHeight+1)]  # TODO - create a 2d int/Piece array to store the state of the game
         self.printBoardArray()    # TODO - uncomment this method after creating the array above
+        print("current player time " , self.game_logic.getCurrentPlayer().get_time())
+        self.game_logic.getCurrentPlayer().startTimer()
+        
 
     def printBoardArray(self):
         '''prints the boardArray in an attractive way'''
@@ -287,7 +290,10 @@ class Board(QFrame):  # base the board on a QFrame widget
         if distance <= tolerance:
             # valid click call try move to validate the move
             if self.tryMove(newX, newY):
+                self.game_logic.currentPlayer.set_turn(0)
+                self.game_logic.currentPlayer.stopTimer()
                 # since a move has been made clear the previous pass 
+                print("player playerd clearing passes")
                 self.game_logic.clearPass()
                 # check normal piece capture
                 captured_pieces = self.game_logic.capture_pieces(self.boardArray, newX, newY, self.game_logic.getCurrentPlayer().get_piece())
@@ -306,6 +312,8 @@ class Board(QFrame):  # base the board on a QFrame widget
                 # switch the turns
                 self.game_logic.switchTurn()
                 self.game_logic.setBoard(self.boardArray)
+                self.game_logic.currentPlayer.set_turn(1)
+                self.game_logic.currentPlayer.startTimer()
                 # printing scores for debug
                 print("Current scores: \nPlayer 1 captured" , self.player1.get_capturedPieces() , "\nPlayer 2 captured" , self.player2.get_capturedPieces()  )
             else:

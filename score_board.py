@@ -13,6 +13,18 @@ class ScoreBoard(QDockWidget):
         self.board = board
         self.initUI()
 
+        # Connect player timerExpiredSignal to the handle_timer_expired slot
+        self.board.player1.timerExpiredSignal.connect(lambda name: self.handle_timer_expired(self.board.player2))
+        self.board.player2.timerExpiredSignal.connect(lambda name: self.handle_timer_expired(self.board.player1))
+
+        # Connect players' signals to update the UI
+        self.board.player1.timerUpdateSignal.connect(self.update_timer)
+        self.board.player2.timerUpdateSignal.connect(self.update_timer)
+
+        # Connect players' signals to update the UI
+        self.board.player1.scoreUpdateSignal.connect(self.update_score)
+        self.board.player2.scoreUpdateSignal.connect(self.update_score)
+
     def initUI(self):
         '''initiates ScoreBoard UI'''
         self.resize(200, 200)
@@ -48,11 +60,11 @@ class ScoreBoard(QDockWidget):
 
         # elements to a score board
         self.player1_name_label = QLabel(f"{self.board.player1.get_name()}")
-        self.player1_time_label = QLabel(f"{self.board.player1.get_time()}")
+        self.player1_time_label = QLabel(f"{self.board.player1.get_time()} seconds")
         self.player1_score_label = QLabel(f"{self.board.player1.get_capturedPieces()}")
 
         self.player2_name_label = QLabel(f"{self.board.player2.get_name()}")
-        self.player2_time_label = QLabel(f"{self.board.player2.get_time()}")
+        self.player2_time_label = QLabel(f"{self.board.player2.get_time()} seconds")
         self.player2_score_label = QLabel(f"{self.board.player2.get_capturedPieces()}")
 
         self.infoSection.addStretch()
@@ -70,7 +82,7 @@ class ScoreBoard(QDockWidget):
 
         self.pass_turn_btn = QPushButton("Pass")
         self.reset_btn = QPushButton("Restart Game")
-        self.finish_btn = QPushButton("Finish Game")
+        
 
         self.mainLayout.addLayout(self.infoSection)
         self.mainWidget.setLayout(self.mainLayout)
@@ -83,7 +95,7 @@ class ScoreBoard(QDockWidget):
 
         self.mainLayout.addWidget(self.pass_turn_btn)
         self.mainLayout.addWidget(self.reset_btn)
-        self.mainLayout.addWidget(self.finish_btn)
+ 
 
         self.setWidget(self.mainWidget)
 
@@ -91,9 +103,7 @@ class ScoreBoard(QDockWidget):
         self.info_btn.clicked.connect(lambda: self.show_rules())
         self.how_to_btn.clicked.connect(lambda: self.show_help())
         self.reset_btn.clicked.connect(lambda: self.board.resetGame())
-        self.finish_btn.clicked.connect(lambda: self.show_finish_result())
-        self.reset_btn.clicked.connect(lambda: self.pass_turn())
-
+        
         # styles
         self.setStyleSheet("""
             QWidget {
@@ -112,9 +122,7 @@ class ScoreBoard(QDockWidget):
             }
         """)
 
-    def pass_turn(self):
-        # TODO
-        pass
+        self.pass_turn_btn.clicked.connect(lambda: self.show_finish_result(-1))
 
     def show_rules(self):
         # set a dialog window
@@ -245,31 +253,39 @@ class ScoreBoard(QDockWidget):
         '''this handles a signal sent from the board class'''
         # when the clickLocationSignal is emitted in board the setClickLocation slot receives it
         board.clickLocationSignal.connect(self.setClickLocation)
-        # when the updateTimerSignal is emitted in the board the setTimeRemaining slot receives it
-        board.updateTimerSignal.connect(self.setTimeRemaining)
-
-    def update_ui(self, board):
+    def update_ui(self):
         # update turn labels
         if self.board.player1.get_turn() == 1:
-            self.player1_label.setStyleSheet("""
+            self.player1_name_label.setStyleSheet("""
                 color: red;
             """)
-            self.player2_label.setStyleSheet("""
-                color: blue;
+            self.player2_name_label.setStyleSheet("""
+                color: grey;
             """)
             print("Changed 1")
 
         if self.board.player2.get_turn() == 1:
-            self.player2_label.setStyleSheet("""
-                            color: red;
+            self.player2_name_label.setStyleSheet("""
+                            color: grey;
                         """)
-            self.player1_label.setStyleSheet("""
+            self.player1_name_label.setStyleSheet("""
                             color: blue;
                         """)
             print("Changed 2")
 
         # update timer labels
-
+    def update_timer(self, player_name, time_left):
+        # find which player to update his timer
+        if player_name == self.board.player1.get_name():
+            self.player1_time_label.setText(f"{time_left} seconds")
+        elif player_name == self.board.player2.get_name():
+            self.player2_time_label.setText(f"{time_left} seconds")
+    def update_score(self, player_name, score):
+        # find which player to update his timer
+        if player_name == self.board.player1.get_name():
+            self.player1_score_label.setText(f"Prisoners: {score} ")
+        elif player_name == self.board.player2.get_name():
+            self.player2_score_label.setText(f"Prisoners: {score}")
 
     @pyqtSlot(str)  # checks to make sure that the following slot is receiving an argument of the type 'int'
     def setClickLocation(self, clickLoc):
@@ -277,88 +293,89 @@ class ScoreBoard(QDockWidget):
         self.label_clickLocation.setText("Click Location: " + clickLoc)
         #print('slot ' + clickLoc)
 
-    @pyqtSlot(int)
-    def setTimeRemaining(self, timeRemaining):
-        '''updates the time remaining label to show the time remaining'''
-        update = "Time Remaining: " + str(timeRemaining)
-        self.label_timeRemaining.setText(update)
-        print('slot ' + str(timeRemaining))
-        # self.redraw()
 
+    def show_finish_result(self, player):
+        # check if both players passed their turns
+        if self.board.game_logic.passTurn() or player != -1:
 
-    def show_finish_result(self):
-        dialogWindow = QDialog()
-        layout = QVBoxLayout()
+            self.end_game()
+            dialogWindow = QDialog()
+            layout = QVBoxLayout()
 
-        # a label for image
-        imageLabel = QLabel()
-        # path to file
-        greatImage = QImage("icons/finish_icon.png")
-        # convertion to a pixmap first then to label to display image
-        pixmap = QPixmap.fromImage(greatImage)
-        pixmap = pixmap.scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio)
-        imageLabel.setPixmap(pixmap)
-        # add QLabel with image to layout with center alignment
-        layout.addWidget(imageLabel, alignment=Qt.AlignmentFlag.AlignCenter)
+            # a label for image
+            imageLabel = QLabel()
+            # path to file
+            greatImage = QImage("icons/finish_icon.png")
+            # convertion to a pixmap first then to label to display image
+            pixmap = QPixmap.fromImage(greatImage)
+            pixmap = pixmap.scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio)
+            imageLabel.setPixmap(pixmap)
+            # add QLabel with image to layout with center alignment
+            layout.addWidget(imageLabel, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        game_over_label = QLabel("Game is over")
-        game_over_label.setObjectName("game_over_label")
-        layout.addWidget(game_over_label, alignment=Qt.AlignmentFlag.AlignCenter)
-        # decide who have more scores
-        score_player_1 = self.board.player1.get_points()
-        score_player_2 = self.board.player2.get_points()
-        winer = 1 if score_player_1 > score_player_2 else 2 if score_player_2 > score_player_1 else 0
-        # show corresponding result
-        if winer == 0:
-            layout.addWidget(QLabel("Friendship wins"), alignment=Qt.AlignmentFlag.AlignCenter)
-        else:
-            layout.addWidget(QLabel("PLayer " + str(winer) + " won"), alignment=Qt.AlignmentFlag.AlignCenter)
+            game_over_label = QLabel("Game is over")
+            game_over_label.setObjectName("game_over_label")
+            layout.addWidget(game_over_label, alignment=Qt.AlignmentFlag.AlignCenter)
+            # decide who have more scores
+            score_player_1 = self.board.player1.get_finalScore()
+            score_player_2 = self.board.player2.get_finalScore()
+            if player!= -1:
+                layout.addWidget(QLabel(player.get_name() + " won"), alignment=Qt.AlignmentFlag.AlignCenter)
+                layout.addWidget(QLabel("Score :" + str(player.get_finalScore())), alignment=Qt.AlignmentFlag.AlignCenter)
+            else:
+                winner = self.board.player1 if score_player_1 > score_player_2 else self.board.player2 if score_player_2 > score_player_1 else 0
+                # show corresponding result
+                if winner == 0:
+                    layout.addWidget(QLabel("Friendship wins"), alignment=Qt.AlignmentFlag.AlignCenter)
+                else:
+                    layout.addWidget(QLabel(winner.get_name() + " won"), alignment=Qt.AlignmentFlag.AlignCenter)
+                    layout.addWidget(QLabel("Score :" + str(winner.get_finalScore())), alignment=Qt.AlignmentFlag.AlignCenter)
 
-        btn_restart = QPushButton("Restart")
-        btn_restart.setObjectName("restart_game_btn")
+            btn_restart = QPushButton("Restart")
+            btn_restart.setObjectName("restart_game_btn")
 
-        button = QPushButton("Close")
+            button = QPushButton("Close")
 
-        buttonSection = QHBoxLayout()
-        buttonSection.addWidget(btn_restart)
-        buttonSection.addWidget(button)
+            buttonSection = QHBoxLayout()
+            buttonSection.addWidget(btn_restart)
+            buttonSection.addWidget(button)
 
-        layout.addLayout(buttonSection)
+            layout.addLayout(buttonSection)
 
-        btn_restart.clicked.connect(lambda: self.board.resetGame())
-        button.clicked.connect(dialogWindow.accept)
+            btn_restart.clicked.connect(lambda: self.board.resetGame())
+            button.clicked.connect(dialogWindow.accept)
 
-        dialogWindow.setLayout(layout)
-        # st styles
-        dialogWindow.setStyleSheet(
-            """
-            QDialog {
-                background-color: white;
-            }
-            QPushButton{
-                margin-top: 20px;
-                padding: 10px auto;
-                background-color: white;
-                font-size: 15px;
-                border: 1px solid gray;
-                border-radius: 10%;
-            }
-            QLabel {
-                font-size:18px;
-            }
-            #game_over_label {
-                font-size:20px;
-                margin-bottom: 20px;
-                font-weight: bold;
-            }
-            #restart_game_btn {
-                background-color: rgb(250, 241, 202);
-            }
-            """
-        )
-        dialogWindow.exec()
+            dialogWindow.setLayout(layout)
+            # st styles
+            dialogWindow.setStyleSheet(
+                """
+                QDialog {
+                    background-color: white;
+                }
+                QPushButton{
+                    margin-top: 20px;
+                    padding: 10px auto;
+                    background-color: white;
+                    font-size: 15px;
+                    border: 1px solid gray;
+                    border-radius: 10%;
+                }
+                QLabel {
+                    font-size:18px;
+                }
+                #game_over_label {
+                    font-size:20px;
+                    margin-bottom: 20px;
+                    font-weight: bold;
+                }
+                #restart_game_btn {
+                    background-color: rgb(250, 241, 202);
+                }
+                """
+            )
+            dialogWindow.exec()
 
-        self.close()
+            self.close()
 
     def end_game(self):
         '''calls the calculate_final_scores method from the GameLogic class'''
@@ -371,3 +388,6 @@ class ScoreBoard(QDockWidget):
         '''Connects the ScoreBoard to the GameLogic instance.'''
         self.game_logic = game_logic
 
+    def handle_timer_expired(self, player):
+        print(f"{player.get_name()} ran out of time. Ending game.")
+        self.show_finish_result(player)
