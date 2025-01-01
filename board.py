@@ -291,6 +291,7 @@ class Board(QFrame):  # base the board on a QFrame widget
             # valid click call try move to validate the move
             if self.tryMove(newX, newY):
                 self.game_logic.currentPlayer.set_turn(0)
+                self.game_logic.currentPlayer.stopTimer()
                 # since a move has been made clear the previous pass 
                 print("player playerd clearing passes")
                 self.game_logic.clearPass()
@@ -312,6 +313,7 @@ class Board(QFrame):  # base the board on a QFrame widget
                 self.game_logic.switchTurn()
                 self.game_logic.setBoard(self.boardArray)
                 self.game_logic.currentPlayer.set_turn(1)
+                self.game_logic.currentPlayer.startTimer()
                 # printing scores for debug
                 print("Current scores: \nPlayer 1 captured" , self.player1.get_capturedPieces() , "\nPlayer 2 captured" , self.player2.get_capturedPieces()  )
             else:
