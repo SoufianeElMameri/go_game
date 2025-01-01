@@ -86,10 +86,10 @@ class Board(QFrame):  # base the board on a QFrame widget
 
         # levels button section
         layout.addWidget(QLabel("Select a game mode:"), alignment=Qt.AlignmentFlag.AlignCenter)
-        timed_level_btn = QPushButton("With timers")
+        timed_level_btn = QPushButton("Speed GO")
         timed_level_btn.setObjectName("timed_level_btn")
 
-        general_level_btn = QPushButton("No timers")
+        general_level_btn = QPushButton("Normal Go")
         general_level_btn.setObjectName("general_level_btn")
         # horizontal alignment box for buttons
         levels_buttonLayout = QHBoxLayout()
