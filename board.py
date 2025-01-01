@@ -25,6 +25,9 @@ class Board(QFrame):  # base the board on a QFrame widget
         self.player1 = Player("Player1")
         self.player2 = Player("Player2")
 
+        # game mode
+        self.game_mode = "timed"
+
         # great мы names collection
         self.initDialog()
 
@@ -81,6 +84,19 @@ class Board(QFrame):  # base the board on a QFrame widget
         layout.addWidget(QLabel("Let's get acquainted:"), alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addLayout(namesSection)
 
+        # levels button section
+        layout.addWidget(QLabel("Select a game mode:"), alignment=Qt.AlignmentFlag.AlignCenter)
+        timed_level_btn = QPushButton("With timers")
+        timed_level_btn.setObjectName("timed_level_btn")
+
+        general_level_btn = QPushButton("No timers")
+        general_level_btn.setObjectName("general_level_btn")
+        # horizontal alignment box for buttons
+        levels_buttonLayout = QHBoxLayout()
+        levels_buttonLayout.addWidget(timed_level_btn)
+        levels_buttonLayout.addWidget(general_level_btn)
+        layout.addLayout(levels_buttonLayout)
+
         # button section
         start_btn = QPushButton("Start Game")
         start_btn.setObjectName("start_btn")
@@ -91,6 +107,8 @@ class Board(QFrame):  # base the board on a QFrame widget
 
         dialogWindow.setLayout(layout)
 
+        timed_level_btn.clicked.connect(lambda: self.select_level_processing(timed_level_btn, general_level_btn))
+        general_level_btn.clicked.connect(lambda: self.select_level_processing(timed_level_btn, general_level_btn))
         start_btn.clicked.connect(lambda: self.on_start_button_clicked(dialogWindow, name1, name2))
 
         # styles for init widget window
@@ -134,6 +152,18 @@ class Board(QFrame):  # base the board on a QFrame widget
                 margin-bottom: 20px;
                 font-size: 15px;
             }
+            #timed_level_btn, #general_level_btn {
+                padding: 10px auto;
+                background-color: white;
+                font-size: 15px;
+                font-weight: 600;
+                border-radius: 10%;
+                border: 1px solid rgb(212, 212, 212);
+            }
+            #timed_level_btn {
+                background-color: rgb(220, 239, 252);
+                border: 1px solid rgb(160, 197, 222);
+            }
             """
         )
         dialogWindow.exec()
@@ -147,7 +177,35 @@ class Board(QFrame):  # base the board on a QFrame widget
 
         # print game info to console
         print(self.player1.get_name() + " vs " + self.player2.get_name())
+        print("game mode: " + str(self.game_mode))
         dialog.accept()
+
+    def select_level_processing(self, timed_level_btn, general_level_btn):
+        active_btn = self.sender()
+        if active_btn == timed_level_btn:
+            self.game_mode = "timed"
+            # print("timed level")
+            not_active_btn = general_level_btn
+            active_btn.setStyleSheet("""
+                background-color: rgb(220, 239, 252);
+                border: 1px solid rgb(160, 197, 222);
+            """)
+            not_active_btn.setStyleSheet("""
+                background-color: white;
+                border: 1px solid rgb(212, 212, 212);
+            """)
+        elif active_btn == general_level_btn:
+            # print("no timer level")
+            self.game_mode = "general"
+            not_active_btn = timed_level_btn
+            active_btn.setStyleSheet("""
+                background-color: rgb(220, 239, 252);
+                border: 1px solid rgb(160, 197, 222);
+            """)
+            not_active_btn.setStyleSheet("""
+                background-color: white;
+                border: 1px solid rgb(212, 212, 212);
+            """)
 
     def initBoard(self):
         '''initiates board'''
