@@ -254,7 +254,8 @@ class GameLogic:
     
     # method to clear the passes
     def clearPass(self):
-        self.passes == 0
+        self.passes = 0
+        print("current passes" , self.passes)
 
     # method to clear the past moves
     def clearMoves(self):
@@ -262,6 +263,7 @@ class GameLogic:
         self.whiteLastMoves.clear()
     # method to pass the current turn
     def passTurn(self):
+        print("player passed")
         self.passes +=1
         # if two passes has been made return true to end the game
         if self.passes == 2:

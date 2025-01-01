@@ -288,6 +288,7 @@ class Board(QFrame):  # base the board on a QFrame widget
             # valid click call try move to validate the move
             if self.tryMove(newX, newY):
                 # since a move has been made clear the previous pass 
+                print("player playerd clearing passes")
                 self.game_logic.clearPass()
                 # check normal piece capture
                 captured_pieces = self.game_logic.capture_pieces(self.boardArray, newX, newY, self.game_logic.getCurrentPlayer().get_piece())
