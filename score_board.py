@@ -21,6 +21,10 @@ class ScoreBoard(QDockWidget):
         self.board.player1.timerUpdateSignal.connect(self.update_timer)
         self.board.player2.timerUpdateSignal.connect(self.update_timer)
 
+        # Connect players' signals to update the UI
+        self.board.player1.scoreUpdateSignal.connect(self.update_score)
+        self.board.player2.scoreUpdateSignal.connect(self.update_score)
+
     def initUI(self):
         '''initiates ScoreBoard UI'''
         self.resize(200, 200)
@@ -122,6 +126,12 @@ class ScoreBoard(QDockWidget):
             self.player1_time_label.setText(f"{time_left} seconds")
         elif player_name == self.board.player2.get_name():
             self.player2_time_label.setText(f"{time_left} seconds")
+    def update_score(self, player_name, score):
+        # find which player to update his timer
+        if player_name == self.board.player1.get_name():
+            self.player1_score_label.setText(f"Prisoners: {score} ")
+        elif player_name == self.board.player2.get_name():
+            self.player2_score_label.setText(f"Prisoners: {score}")
 
     @pyqtSlot(str)  # checks to make sure that the following slot is receiving an argument of the type 'int'
     def setClickLocation(self, clickLoc):
