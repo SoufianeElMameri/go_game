@@ -11,8 +11,6 @@ class ScoreBoard(QDockWidget):
     def __init__(self, board: Board, parent=None):
         super().__init__(parent)
         self.board = board
-        self.player1_state = self.board.player1.get_turn()
-        self.player2_state = self.board.player2.get_turn()
         self.initUI()
 
     def initUI(self):
@@ -44,11 +42,11 @@ class ScoreBoard(QDockWidget):
         # elements to a score board
         self.player1_name_label = QLabel(f"{self.board.player1.get_name()}")
         self.player1_time_label = QLabel(f"{self.board.player1.get_time()}")
-        self.player1_score_label = QLabel(f"{self.board.player1.get_points()}")
+        self.player1_score_label = QLabel(f"{self.board.player1.get_capturedPieces()}")
 
         self.player2_name_label = QLabel(f"{self.board.player2.get_name()}")
         self.player2_time_label = QLabel(f"{self.board.player2.get_time()}")
-        self.player2_score_label = QLabel(f"{self.board.player2.get_points()}")
+        self.player2_score_label = QLabel(f"{self.board.player2.get_capturedPieces()}")
 
         self.infoSection.addWidget(self.info_btn)
         self.infoSection.addWidget(self.how_to_btn)
