@@ -61,7 +61,7 @@ class ScoreBoard(QDockWidget):
 
         self.pass_turn_btn = QPushButton("Pass")
         self.reset_btn = QPushButton("Restart Game")
-        self.finish_btn = QPushButton("Finish Game")
+        
 
         self.mainLayout.addLayout(self.infoSection)
         self.mainWidget.setLayout(self.mainLayout)
@@ -74,18 +74,13 @@ class ScoreBoard(QDockWidget):
 
         self.mainLayout.addWidget(self.pass_turn_btn)
         self.mainLayout.addWidget(self.reset_btn)
-        self.mainLayout.addWidget(self.finish_btn)
+ 
 
         self.setWidget(self.mainWidget)
 
         # listeners for buttons
         self.reset_btn.clicked.connect(lambda: self.board.resetGame())
-        self.finish_btn.clicked.connect(lambda: self.show_finish_result())
-        self.reset_btn.clicked.connect(lambda: self.pass_turn())
-
-    def pass_turn(self):
-        # TODO
-        pass
+        self.reset_btn.clicked.connect(lambda: self.board.game_logic.passTurn())
 
 
     def make_connection(self, board):
@@ -95,22 +90,22 @@ class ScoreBoard(QDockWidget):
         # when the updateTimerSignal is emitted in the board the setTimeRemaining slot receives it
         board.updateTimerSignal.connect(self.setTimeRemaining)
 
-    def update_ui(self, board):
+    def update_ui(self):
         # update turn labels
         if self.board.player1.get_turn() == 1:
-            self.player1_label.setStyleSheet("""
+            self.player1_name_label.setStyleSheet("""
                 color: red;
             """)
-            self.player2_label.setStyleSheet("""
-                color: blue;
+            self.player2_name_label.setStyleSheet("""
+                color: grey;
             """)
             print("Changed 1")
 
         if self.board.player2.get_turn() == 1:
-            self.player2_label.setStyleSheet("""
-                            color: red;
+            self.player2_name_label.setStyleSheet("""
+                            color: grey;
                         """)
-            self.player1_label.setStyleSheet("""
+            self.player1_name_label.setStyleSheet("""
                             color: blue;
                         """)
             print("Changed 2")
@@ -134,6 +129,7 @@ class ScoreBoard(QDockWidget):
 
 
     def show_finish_result(self):
+        self.end_game()
         dialogWindow = QDialog()
         layout = QVBoxLayout()
 
@@ -152,8 +148,8 @@ class ScoreBoard(QDockWidget):
         game_over_label.setObjectName("game_over_label")
         layout.addWidget(game_over_label, alignment=Qt.AlignmentFlag.AlignCenter)
         # decide who have more scores
-        score_player_1 = self.board.player1.get_points()
-        score_player_2 = self.board.player2.get_points()
+        score_player_1 = self.board.player1.get_finalScore
+        score_player_2 = self.board.player2.get_finalScore
         winer = 1 if score_player_1 > score_player_2 else 2 if score_player_2 > score_player_1 else 0
         # show corresponding result
         if winer == 0:

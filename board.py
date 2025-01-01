@@ -304,8 +304,10 @@ class Board(QFrame):  # base the board on a QFrame widget
                 self.game_logic.getCurrentPlayer().set_capturedPieces(len(captured_pieces))
                 print("Pieces captured ", selfCaptured , selfCaptured)
                 # switch the turns
+                self.game_logic.currentPlayer.set_turn(0)
                 self.game_logic.switchTurn()
                 self.game_logic.setBoard(self.boardArray)
+                self.game_logic.currentPlayer.set_turn(1)
                 # printing scores for debug
                 print("Current scores: \nPlayer 1 captured" , self.player1.get_capturedPieces() , "\nPlayer 2 captured" , self.player2.get_capturedPieces()  )
             else:

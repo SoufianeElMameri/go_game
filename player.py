@@ -6,9 +6,14 @@ class Player:
         self.name = name
         self.capturedPieces = 0  # Default points
         self.finalScore = 0
-        self.time = 2  # 2 minutes
+        self.time = 2 # 2 minutes
+        self.turn = 0  
         self.piece = Piece.NoPiece  # Assuming Piece class has a 'noPiece' constant
 
+    def get_turn(self):
+        return self.turn
+    def set_turn(self, turn):
+        self.turn = turn
     # Getter for name
     def get_name(self):
         return self.name
