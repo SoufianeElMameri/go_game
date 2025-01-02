@@ -11,6 +11,8 @@ class ScoreBoard(QDockWidget):
     def __init__(self, board: Board, parent=None):
         super().__init__(parent)
         self.board = board
+        # removing the title bar to remove the close button
+        self.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
         self.initUI()
 
         # Connect player timerExpiredSignal to the handle_timer_expired slot
