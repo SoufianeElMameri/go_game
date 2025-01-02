@@ -33,12 +33,13 @@ class Board(QFrame):  # base the board on a QFrame widget
 
         self.initBoard()
 
-    def initDialog (self):
+    def initDialog(self):
         # set up a dialog window
         dialogWindow = QDialog()
         dialogWindow.setWindowTitle("Go Game - Project")
         # set layout
         layout = QVBoxLayout()
+        layout.setSpacing(15)  # Add spacing between rows
 
         # horizontal alignment box for text names inputs
         namesSection = QHBoxLayout()
@@ -63,7 +64,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         imageLabel = QLabel()
         # path to file
         greatImage = QImage("icons/game_icon.png")
-        # convertion to a pixmap first then to label to display image
+        # conversion to a pixmap first then to label to display image
         pixmap = QPixmap.fromImage(greatImage)
         pixmap = pixmap.scaled(130, 130, Qt.AspectRatioMode.KeepAspectRatio)
         imageLabel.setPixmap(pixmap)
@@ -76,7 +77,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         welcome_text_label.setObjectName("welcome_text_label")
         layout.addWidget(welcome_text_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        desc_label = QLabel("to go game for two person")
+        desc_label = QLabel("to Go Game")
         desc_label.setObjectName("desc_label")
         layout.addWidget(desc_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
@@ -85,7 +86,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         layout.addLayout(namesSection)
 
         # levels button section
-        layout.addWidget(QLabel("Select a game mode:"), alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(QLabel("Game Mode"), alignment=Qt.AlignmentFlag.AlignCenter)
         timed_level_btn = QPushButton("Speed GO")
         timed_level_btn.setObjectName("timed_level_btn")
 
@@ -100,6 +101,11 @@ class Board(QFrame):  # base the board on a QFrame widget
         # button section
         start_btn = QPushButton("Start Game")
         start_btn.setObjectName("start_btn")
+
+        # change the cursor o pointer for tthe buttons
+        start_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        timed_level_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        general_level_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         # horizontal alignment box for buttons
         buttonLayout = QHBoxLayout()
         buttonLayout.addWidget(start_btn)
@@ -164,6 +170,12 @@ class Board(QFrame):  # base the board on a QFrame widget
                 background-color: rgb(220, 239, 252);
                 border: 1px solid rgb(160, 197, 222);
             }
+            #timed_level_btn:hover, #general_level_btn:hover {
+                background-color: rgb(180, 220, 250);
+            }
+            #start_btn:hover{
+                background-color: rgb(174, 209, 176);
+            }
             """
         )
         dialogWindow.exec()
@@ -219,9 +231,6 @@ class Board(QFrame):  # base the board on a QFrame widget
         self.game_logic.assign_pieces()
         self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth+1)] for _ in range(self.boardHeight+1)]  # TODO - create a 2d int/Piece array to store the state of the game
         self.printBoardArray()    # TODO - uncomment this method after creating the array above
-
-        # show player info dialog
-        self.showPlayerInfoDialog()
         # starting timer if the game mode is timed
         self.startTimeForPlayer()
         
@@ -327,8 +336,6 @@ class Board(QFrame):  # base the board on a QFrame widget
         
         self.game_logic.assign_pieces()
         self.update()
-        # Show player info dialog
-        self.showPlayerInfoDialog()
         print("game restarted")
         self.startTimeForPlayer()
         
@@ -400,40 +407,3 @@ class Board(QFrame):  # base the board on a QFrame widget
     def startTimeForPlayer(self):
         if self.game_mode == "timed":
             self.game_logic.currentPlayer.startTimer()
-    # method to display dialog showing player information and assigned pieces
-    def showPlayerInfoDialog(self):
-        dialogWindow = QDialog()
-        dialogWindow.setWindowTitle("Player Information")
-        layout = QVBoxLayout()
-
-        # Game mode label
-        game_mode_label = QLabel(f"Game Mode: {self.game_mode.capitalize()}")
-        game_mode_label.setStyleSheet("font-size: 16px; font-weight: bold; color: blue; margin: 10px;")
-        layout.addWidget(game_mode_label, alignment=Qt.AlignmentFlag.AlignCenter)
-
-        # Create and configure labels for player information
-        player1_label = QLabel(f"{self.player1.get_name()} is playing: {'Black' if self.player1.get_piece() == Piece.Black else 'White'}")
-        player1_label.setStyleSheet("font-size: 16px; margin: 10px;")
-
-        player2_label = QLabel(f"{self.player2.get_name()} is playing: {'Black' if self.player2.get_piece() == Piece.Black else 'White'}")
-        player2_label.setStyleSheet("font-size: 16px; margin: 10px;")
-
-        # Indicate who goes first
-        first_player = self.player1 if self.player1.get_piece() == Piece.Black else self.player2
-        first_player_label = QLabel(f"{first_player.get_name()} goes first!")
-        first_player_label.setStyleSheet("font-size: 18px; font-weight: bold; color: green; margin: 10px;")
-
-        # Add labels to layout
-        layout.addWidget(player1_label, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(player2_label, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(first_player_label, alignment=Qt.AlignmentFlag.AlignCenter)
-
-        # OK button to close the dialog
-        ok_button = QPushButton("OK")
-        ok_button.setStyleSheet("padding: 10px; font-size: 14px;")
-        ok_button.clicked.connect(dialogWindow.accept)  # Close the dialog when OK is clicked
-        layout.addWidget(ok_button, alignment=Qt.AlignmentFlag.AlignCenter)
-
-        # Set the layout and execute the dialog
-        dialogWindow.setLayout(layout)
-        dialogWindow.exec()
