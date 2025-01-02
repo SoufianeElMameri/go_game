@@ -323,7 +323,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         self.game_logic.clearMoves()
         
         self.game_logic.assign_pieces()
-
+        self.update()
         print("game restarted")
     def tryMove(self, newX, newY):
         '''tries to move a piece'''
