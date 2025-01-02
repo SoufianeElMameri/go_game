@@ -1,7 +1,7 @@
 from math import floor
 
 from PyQt6.QtGui import QImage, QPixmap, QIcon
-from PyQt6.QtWidgets import QDockWidget, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QPushButton, QDialog
+from PyQt6.QtWidgets import QDockWidget, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QPushButton, QDialog, QGridLayout
 from PyQt6.QtCore import pyqtSlot, Qt, QSize
 from board import Board
 
@@ -44,11 +44,15 @@ class ScoreBoard(QDockWidget):
         # horizontal alignment box for info labels
         self.infoSection = QHBoxLayout()
 
-        # horizontal alignment box for text
-        self.player1_section = QHBoxLayout()
+        # vertical alignment box for text
+        self.player1_section_widget = QWidget()
+        self.player1_section_widget.setFixedHeight(150)
+        self.player1_section = QVBoxLayout(self.player1_section_widget)
 
-        # horizontal alignment box for text
-        self.player2_section = QHBoxLayout()
+        # vertical alignment box for text
+        self.player2_section_widget = QWidget()
+        self.player2_section_widget.setFixedHeight(150)
+        self.player2_section = QVBoxLayout(self.player2_section_widget)
 
         # create two labels which will be updated by signals
         # self.label_clickLocation = QLabel("Click Location: ")
@@ -65,52 +69,58 @@ class ScoreBoard(QDockWidget):
         self.how_to_btn.setObjectName("how_to_btn")
         self.how_to_btn.setIconSize(QSize(15, 15))
 
+        self.active_player_widget = QWidget()
+        self.active_player_label_layout =  QHBoxLayout(self.active_player_widget)
         self.active_player_label = QLabel(f"{self.board.player1.get_name()}")
+        self.active_player_label_layout.addWidget(self.active_player_label)
+        self.active_player_widget.setFixedHeight(40)
 
         # elements to a score board
         self.player1_name_label = QLabel(f"{self.board.player1.get_name()}")
-
-        # self.player1_name_label.setObjectName("player1_section")
-        # self.player1_time_label.setObjectName("player1_section")
-        # self.player1_score_label.setObjectName("player1_section")
-        #
-        # self.player2_name_label.setObjectName("player2_section")
-        # self.player2_time_label.setObjectName("player2_section")
-        # self.player2_score_label.setObjectName("player2_section")
-
+        self.player1_color_label = QLabel(f"Peaces: White")
         if self.board.game_mode == "timed":
-            self.player1_time_label = QLabel(f"{self.parse_time(self.board.player2.get_time())}")
-        self.player1_score_label = QLabel(f"{self.board.player1.get_capturedPieces()}")
+            self.player1_time_label = QLabel(f"Time left: {self.parse_time(self.board.player2.get_time())}")
+        self.player1_score_label = QLabel(f"Score: {self.board.player1.get_capturedPieces()}")
+        self.player1_territory_label = QLabel(f"Territory: 0")
+
 
         self.player2_name_label = QLabel(f"{self.board.player2.get_name()}")
+        self.player2_color_label = QLabel(f"Peaces: Black")
         if self.board.game_mode == "timed":
-            self.player2_time_label = QLabel(f"{self.parse_time(self.board.player2.get_time())}")
+            self.player2_time_label = QLabel(f"Time left: {self.parse_time(self.board.player2.get_time())}")
         self.player2_score_label = QLabel(f"Score: {self.board.player2.get_capturedPieces()}")
+        self.player2_territory_label = QLabel(f"Territory: 0")
 
         self.infoSection.addStretch()
         self.infoSection.addWidget(self.info_btn)
         self.infoSection.addWidget(self.how_to_btn)
         self.infoSection.addStretch()
 
-        self.player1_section.addWidget(self.player1_name_label)
+        self.player1_section.addWidget(self.player1_name_label, alignment=Qt.AlignmentFlag.AlignCenter)
         if self.board.game_mode == "timed":
             self.player1_section.addWidget(self.player1_time_label)
+        self.player1_section.addWidget(self.player1_color_label)
         self.player1_section.addWidget(self.player1_score_label)
+        self.player1_section.addWidget(self.player1_territory_label)
 
-        self.player2_section.addWidget(self.player2_name_label)
+        self.player2_section.addWidget(self.player2_name_label, alignment=Qt.AlignmentFlag.AlignCenter)
         if self.board.game_mode == "timed":
             self.player2_section.addWidget(self.player2_time_label)
+        self.player2_section.addWidget(self.player2_color_label)
         self.player2_section.addWidget(self.player2_score_label)
+        self.player2_section.addWidget(self.player2_territory_label)
 
         self.pass_turn_btn = QPushButton("Pass")
         self.reset_btn = QPushButton("Restart Game")
-        
 
-        self.mainLayout.addLayout(self.infoSection)
         self.mainWidget.setLayout(self.mainLayout)
-        self.mainLayout.addWidget(self.active_player_label)
-        self.mainLayout.addLayout(self.player1_section)
-        self.mainLayout.addLayout(self.player2_section)
+        self.mainLayout.addLayout(self.infoSection)
+        self.mainLayout.addStretch()
+        self.mainLayout.addWidget(self.active_player_widget, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.mainLayout.addStretch()
+        self.mainLayout.addWidget(self.player1_section_widget)
+        self.mainLayout.addWidget(self.player2_section_widget)
+        self.mainLayout.addStretch()
 
         # init set up
         # self.mainLayout.addWidget(self.label_clickLocation)
@@ -318,9 +328,9 @@ class ScoreBoard(QDockWidget):
         # find which player to update his timer
         if self.board.game_mode == "timed":
             if player_name == self.board.player1.get_name():
-                self.player1_time_label.setText(f"{self.parse_time(time_left)}")
+                self.player1_time_label.setText(f"Time left: {self.parse_time(time_left)}")
             elif player_name == self.board.player2.get_name():
-                self.player2_time_label.setText(f"{self.parse_time(time_left)}")
+                self.player2_time_label.setText(f"Time left: {self.parse_time(time_left)}")
 
     def update_score(self, player_name, score):
         # find which player to update his timer
