@@ -219,6 +219,9 @@ class Board(QFrame):  # base the board on a QFrame widget
         self.game_logic.assign_pieces()
         self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth+1)] for _ in range(self.boardHeight+1)]  # TODO - create a 2d int/Piece array to store the state of the game
         self.printBoardArray()    # TODO - uncomment this method after creating the array above
+
+        # show player info dialog
+        self.showPlayerInfoDialog()
         print("current player time " , self.game_logic.getCurrentPlayer().get_time())
         self.game_logic.getCurrentPlayer().startTimer()
         
@@ -324,6 +327,8 @@ class Board(QFrame):  # base the board on a QFrame widget
         
         self.game_logic.assign_pieces()
         self.update()
+        # Show player info dialog
+        self.showPlayerInfoDialog()
         print("game restarted")
     def tryMove(self, newX, newY):
         '''tries to move a piece'''
@@ -389,3 +394,36 @@ class Board(QFrame):  # base the board on a QFrame widget
                 painter.restore()
     def endGame(self):
         QApplication.quit()
+
+    # method to display dialog showing player information and assigned pieces
+    def showPlayerInfoDialog(self):
+        dialogWindow = QDialog()
+        dialogWindow.setWindowTitle("Player Information")
+        layout = QVBoxLayout()
+
+        # Create and configure labels for player information
+        player1_label = QLabel(f"{self.player1.get_name()} - Piece: {'Black' if self.player1.get_piece() == Piece.Black else 'White'}")
+        player1_label.setStyleSheet("font-size: 16px; margin: 10px;")
+
+        player2_label = QLabel(f"{self.player2.get_name()} - Piece: {'Black' if self.player2.get_piece() == Piece.Black else 'White'}")
+        player2_label.setStyleSheet("font-size: 16px; margin: 10px;")
+
+        # Indicate who goes first
+        first_player = self.player1 if self.player1.get_piece() == Piece.Black else self.player2
+        first_player_label = QLabel(f"{first_player.get_name()} goes first!")
+        first_player_label.setStyleSheet("font-size: 18px; font-weight: bold; color: green; margin: 10px;")
+
+        # Add labels to layout
+        layout.addWidget(player1_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(player2_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(first_player_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # OK button to close the dialog
+        ok_button = QPushButton("OK")
+        ok_button.setStyleSheet("padding: 10px; font-size: 14px;")
+        ok_button.clicked.connect(dialogWindow.accept)  # Close the dialog when OK is clicked
+        layout.addWidget(ok_button, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Set the layout and execute the dialog
+        dialogWindow.setLayout(layout)
+        dialogWindow.exec()

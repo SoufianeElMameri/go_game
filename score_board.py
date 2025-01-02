@@ -259,7 +259,7 @@ class ScoreBoard(QDockWidget):
         # update turn labels
         if self.board.player1.get_turn() == 1:
             self.player1_name_label.setStyleSheet("""
-                color: red;
+                color: blue;
             """)
             self.player2_name_label.setStyleSheet("""
                 color: grey;
