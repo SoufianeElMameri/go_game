@@ -12,6 +12,8 @@ class ScoreBoard(QDockWidget):
     def __init__(self, board: Board, parent=None):
         super().__init__(parent)
         self.board = board
+        # removing the title bar to remove the close button
+        self.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
         self.initUI()
 
         # Connect player timerExpiredSignal to the handle_timer_expired slot
@@ -67,18 +69,23 @@ class ScoreBoard(QDockWidget):
 
         # elements to a score board
         self.player1_name_label = QLabel(f"{self.board.player1.get_name()}")
-        self.player1_time_label = QLabel(f"{self.parse_time(self.board.player2.get_time())}")
-        self.player1_score_label = QLabel(f"Score: {self.board.player1.get_capturedPieces()}")
-        self.player1_name_label.setObjectName("player1_section")
-        self.player1_time_label.setObjectName("player1_section")
-        self.player1_score_label.setObjectName("player1_section")
+
+        # self.player1_name_label.setObjectName("player1_section")
+        # self.player1_time_label.setObjectName("player1_section")
+        # self.player1_score_label.setObjectName("player1_section")
+        #
+        # self.player2_name_label.setObjectName("player2_section")
+        # self.player2_time_label.setObjectName("player2_section")
+        # self.player2_score_label.setObjectName("player2_section")
+
+        if self.board.game_mode == "timed":
+            self.player1_time_label = QLabel(f"{self.parse_time(self.board.player2.get_time())}")
+        self.player1_score_label = QLabel(f"{self.board.player1.get_capturedPieces()}")
 
         self.player2_name_label = QLabel(f"{self.board.player2.get_name()}")
-        self.player2_time_label = QLabel(f"{self.parse_time(self.board.player2.get_time())}")
+        if self.board.game_mode == "timed":
+            self.player2_time_label = QLabel(f"{self.parse_time(self.board.player2.get_time())}")
         self.player2_score_label = QLabel(f"Score: {self.board.player2.get_capturedPieces()}")
-        self.player2_name_label.setObjectName("player2_section")
-        self.player2_time_label.setObjectName("player2_section")
-        self.player2_score_label.setObjectName("player2_section")
 
         self.infoSection.addStretch()
         self.infoSection.addWidget(self.info_btn)
@@ -86,11 +93,13 @@ class ScoreBoard(QDockWidget):
         self.infoSection.addStretch()
 
         self.player1_section.addWidget(self.player1_name_label)
-        self.player1_section.addWidget(self.player1_time_label)
+        if self.board.game_mode == "timed":
+            self.player1_section.addWidget(self.player1_time_label)
         self.player1_section.addWidget(self.player1_score_label)
 
         self.player2_section.addWidget(self.player2_name_label)
-        self.player2_section.addWidget(self.player2_time_label)
+        if self.board.game_mode == "timed":
+            self.player2_section.addWidget(self.player2_time_label)
         self.player2_section.addWidget(self.player2_score_label)
 
         self.pass_turn_btn = QPushButton("Pass")
@@ -307,10 +316,12 @@ class ScoreBoard(QDockWidget):
         # update timer labels
     def update_timer(self, player_name, time_left):
         # find which player to update his timer
-        if player_name == self.board.player1.get_name():
-            self.player1_time_label.setText(f"{self.parse_time(time_left)}")
-        elif player_name == self.board.player2.get_name():
-            self.player2_time_label.setText(f"{self.parse_time(time_left)}")
+        if self.board.game_mode == "timed":
+            if player_name == self.board.player1.get_name():
+                self.player1_time_label.setText(f"{self.parse_time(time_left)}")
+            elif player_name == self.board.player2.get_name():
+                self.player2_time_label.setText(f"{self.parse_time(time_left)}")
+
     def update_score(self, player_name, score):
         # find which player to update his timer
         if player_name == self.board.player1.get_name():
@@ -373,7 +384,7 @@ class ScoreBoard(QDockWidget):
 
             layout.addLayout(buttonSection)
 
-            btn_restart.clicked.connect(lambda: self.board.resetGame())
+            btn_restart.clicked.connect(lambda: (self.board.resetGame(), dialogWindow.accept()))
             button.clicked.connect(lambda: (self.board.endGame(), dialogWindow.accept()))
 
             dialogWindow.setLayout(layout)
@@ -405,8 +416,6 @@ class ScoreBoard(QDockWidget):
                 """
             )
             dialogWindow.exec()
-
-            self.close()
 
     def end_game(self):
         '''calls the calculate_final_scores method from the GameLogic class'''

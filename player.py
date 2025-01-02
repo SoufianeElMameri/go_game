@@ -104,3 +104,22 @@ class Player(QObject):
             print(f"{self.name}'s time is up!")  # Debugging log
             self.timer.stop()  # Stop the QTimer
             self.timerExpiredSignal.emit(self.name)  # Emit signal for timer expiration
+    def reset(self):
+        # reseting captured pieces and updating ui
+        self.capturedPieces = 0
+        self.scoreUpdateSignal.emit(self.name, self.capturedPieces)
+
+        # reseting remaining time and updating ui
+        self.remaining_time = 2 * 60  # Reset to default 2 minutes
+        self.timerUpdateSignal.emit(self.name, self.remaining_time)
+
+        # stop the timer 
+        self.stopTimer()
+
+        # rest turn
+        self.turn = 0
+
+        # reset pieces to no pieces
+        self.piece = Piece.NoPiece
+        # to debug
+        print(f"Player {self.name} reset complete")

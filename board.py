@@ -33,12 +33,13 @@ class Board(QFrame):  # base the board on a QFrame widget
 
         self.initBoard()
 
-    def initDialog (self):
+    def initDialog(self):
         # set up a dialog window
         dialogWindow = QDialog()
         dialogWindow.setWindowTitle("Go Game - Project")
         # set layout
         layout = QVBoxLayout()
+        layout.setSpacing(15)  # Add spacing between rows
 
         # horizontal alignment box for text names inputs
         namesSection = QHBoxLayout()
@@ -63,7 +64,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         imageLabel = QLabel()
         # path to file
         greatImage = QImage("icons/game_icon.png")
-        # convertion to a pixmap first then to label to display image
+        # conversion to a pixmap first then to label to display image
         pixmap = QPixmap.fromImage(greatImage)
         pixmap = pixmap.scaled(130, 130, Qt.AspectRatioMode.KeepAspectRatio)
         imageLabel.setPixmap(pixmap)
@@ -76,7 +77,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         welcome_text_label.setObjectName("welcome_text_label")
         layout.addWidget(welcome_text_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        desc_label = QLabel("to go game for two person")
+        desc_label = QLabel("to Go Game")
         desc_label.setObjectName("desc_label")
         layout.addWidget(desc_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
@@ -85,7 +86,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         layout.addLayout(namesSection)
 
         # levels button section
-        layout.addWidget(QLabel("Select a game mode:"), alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(QLabel("Game Mode"), alignment=Qt.AlignmentFlag.AlignCenter)
         timed_level_btn = QPushButton("Speed GO")
         timed_level_btn.setObjectName("timed_level_btn")
 
@@ -100,6 +101,11 @@ class Board(QFrame):  # base the board on a QFrame widget
         # button section
         start_btn = QPushButton("Start Game")
         start_btn.setObjectName("start_btn")
+
+        # change the cursor o pointer for tthe buttons
+        start_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        timed_level_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        general_level_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         # horizontal alignment box for buttons
         buttonLayout = QHBoxLayout()
         buttonLayout.addWidget(start_btn)
@@ -164,6 +170,12 @@ class Board(QFrame):  # base the board on a QFrame widget
                 background-color: rgb(220, 239, 252);
                 border: 1px solid rgb(160, 197, 222);
             }
+            #timed_level_btn:hover, #general_level_btn:hover {
+                background-color: rgb(180, 220, 250);
+            }
+            #start_btn:hover{
+                background-color: rgb(174, 209, 176);
+            }
             """
         )
         dialogWindow.exec()
@@ -219,8 +231,8 @@ class Board(QFrame):  # base the board on a QFrame widget
         self.game_logic.assign_pieces()
         self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth+1)] for _ in range(self.boardHeight+1)]  # TODO - create a 2d int/Piece array to store the state of the game
         self.printBoardArray()    # TODO - uncomment this method after creating the array above
-        print("current player time " , self.game_logic.getCurrentPlayer().get_time())
-        self.game_logic.getCurrentPlayer().startTimer()
+        # starting timer if the game mode is timed
+        self.startTimeForPlayer()
         
 
     def printBoardArray(self):
@@ -256,15 +268,6 @@ class Board(QFrame):  # base the board on a QFrame widget
         self.isStarted = True  # set the boolean which determines if the game has started to TRUE
         #self.timer.start(self.timerSpeed)  # start the timer with the correct speed
         print("start () - timer is started")
-
-    def timerEvent(self):
-        '''this event is automatically called when the timer is updated. based on the timerSpeed variable '''
-        # TODO adapt this code to handle your timers
-        if Board.counter == 0:
-            print("Game over")
-        self.counter -= 1
-        #print('timerEvent()', self.counter)
-        self.updateTimerSignal.emit(self.counter)
 
     def paintEvent(self, event):
         '''paints the board and the pieces of the game'''
@@ -313,7 +316,7 @@ class Board(QFrame):  # base the board on a QFrame widget
                 self.game_logic.switchTurn()
                 self.game_logic.setBoard(self.boardArray)
                 self.game_logic.currentPlayer.set_turn(1)
-                self.game_logic.currentPlayer.startTimer()
+                self.startTimeForPlayer()
                 # printing scores for debug
                 print("Current scores: \nPlayer 1 captured" , self.player1.get_capturedPieces() , "\nPlayer 2 captured" , self.player2.get_capturedPieces()  )
             else:
@@ -325,12 +328,17 @@ class Board(QFrame):  # base the board on a QFrame widget
     def resetGame(self):
         '''clears pieces from the board'''
         self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth+1)] for _ in range(self.boardHeight+1)]
-        self.player1.set_time(2) , self.player2.set_time(2)
-        self.player1.set_capturedPieces(0) , self.player2.set_capturedPieces(0)
+        self.player1.reset()
+        self.player2.reset()
+        self.game_logic = GameLogic(self.player1 , self.player2)
         self.game_logic.clearPass()
         self.game_logic.clearMoves()
-        # TODO write code to reset game
-
+        
+        self.game_logic.assign_pieces()
+        self.update()
+        print("game restarted")
+        self.startTimeForPlayer()
+        
     def tryMove(self, newX, newY):
         '''tries to move a piece'''
         
@@ -395,3 +403,7 @@ class Board(QFrame):  # base the board on a QFrame widget
                 painter.restore()
     def endGame(self):
         QApplication.quit()
+
+    def startTimeForPlayer(self):
+        if self.game_mode == "timed":
+            self.game_logic.currentPlayer.startTimer()

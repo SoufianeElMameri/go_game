@@ -268,6 +268,8 @@ class GameLogic(QObject):
         self.passes +=1
         # if two passes has been made return true to end the game
         if self.passes == 2:
+            self.player1.stopTimer()
+            self.player2.stopTimer()
             return True
         # only one pass has been made continue the game
         return False
@@ -300,14 +302,18 @@ class GameLogic(QObject):
         print(self.player1.get_capturedPieces())
         print(self.player2.get_capturedPieces())
         print(white_territory , sum(row.count(1) for row in board))
-        player1_score = white_territory + self.player1.get_capturedPieces() + sum(row.count(1) for row in board)
-        player2_score = black_territory + self.player2.get_capturedPieces()+ sum(row.count(2) for row in board)
+        player1_score = white_territory + sum(row.count(1) for row in board)
+        player2_score = black_territory + sum(row.count(2) for row in board)
 
         # Update player objects
         if self.player1.get_piece() == Piece.White:
+            player1_score += self.player1.get_capturedPieces()
+            player2_score += self.player2.get_capturedPieces()
             self.player1.set_finalScore(player1_score)
             self.player2.set_finalScore(player2_score)
         else:
+            player1_score += self.player2.get_capturedPieces()
+            player2_score += self.player1.get_capturedPieces()
             self.player1.set_finalScore(player2_score) 
             self.player2.set_finalScore(player1_score) 
 
