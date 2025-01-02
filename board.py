@@ -330,6 +330,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         # Show player info dialog
         self.showPlayerInfoDialog()
         print("game restarted")
+        self.game_logic.currentPlayer.startTimer()
     def tryMove(self, newX, newY):
         '''tries to move a piece'''
         
