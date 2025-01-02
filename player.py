@@ -5,6 +5,7 @@ class Player(QObject):
     timerExpiredSignal = pyqtSignal(str) 
     timerUpdateSignal = pyqtSignal(str, int)
     scoreUpdateSignal = pyqtSignal(str, int)
+    turnUpdateSignal = pyqtSignal(str, int)
     def __init__(self, name):
         '''Initializes a player with the given name and default values for points, time, turn, and piece'''
         super().__init__()
@@ -54,6 +55,7 @@ class Player(QObject):
     # Setter for turn
     def set_turn(self, turn):
         self.turn = turn
+        self.turnUpdateSignal.emit(self.name, self.turn)
         
     # Getter for piece
     def get_piece(self):

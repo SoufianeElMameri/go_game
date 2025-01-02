@@ -1,3 +1,4 @@
+from math import floor
 
 from PyQt6.QtGui import QImage, QPixmap, QIcon
 from PyQt6.QtWidgets import QDockWidget, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QPushButton, QDialog
@@ -16,6 +17,10 @@ class ScoreBoard(QDockWidget):
         # Connect player timerExpiredSignal to the handle_timer_expired slot
         self.board.player1.timerExpiredSignal.connect(lambda name: self.handle_timer_expired(self.board.player2))
         self.board.player2.timerExpiredSignal.connect(lambda name: self.handle_timer_expired(self.board.player1))
+
+        # Connect player turnUpdateSignal to handle turn change
+        self.board.player1.turnUpdateSignal.connect(self.update_ui)
+        self.board.player2.turnUpdateSignal.connect(self.update_ui)
 
         # Connect players' signals to update the UI
         self.board.player1.timerUpdateSignal.connect(self.update_timer)
@@ -58,14 +63,22 @@ class ScoreBoard(QDockWidget):
         self.how_to_btn.setObjectName("how_to_btn")
         self.how_to_btn.setIconSize(QSize(15, 15))
 
+        self.active_player_label = QLabel(f"{self.board.player1.get_name()}")
+
         # elements to a score board
         self.player1_name_label = QLabel(f"{self.board.player1.get_name()}")
-        self.player1_time_label = QLabel(f"{self.board.player1.get_time()} seconds")
-        self.player1_score_label = QLabel(f"{self.board.player1.get_capturedPieces()}")
+        self.player1_time_label = QLabel(f"{self.parse_time(self.board.player2.get_time())}")
+        self.player1_score_label = QLabel(f"Score: {self.board.player1.get_capturedPieces()}")
+        self.player1_name_label.setObjectName("player1_section")
+        self.player1_time_label.setObjectName("player1_section")
+        self.player1_score_label.setObjectName("player1_section")
 
         self.player2_name_label = QLabel(f"{self.board.player2.get_name()}")
-        self.player2_time_label = QLabel(f"{self.board.player2.get_time()} seconds")
-        self.player2_score_label = QLabel(f"{self.board.player2.get_capturedPieces()}")
+        self.player2_time_label = QLabel(f"{self.parse_time(self.board.player2.get_time())}")
+        self.player2_score_label = QLabel(f"Score: {self.board.player2.get_capturedPieces()}")
+        self.player2_name_label.setObjectName("player2_section")
+        self.player2_time_label.setObjectName("player2_section")
+        self.player2_score_label.setObjectName("player2_section")
 
         self.infoSection.addStretch()
         self.infoSection.addWidget(self.info_btn)
@@ -86,6 +99,7 @@ class ScoreBoard(QDockWidget):
 
         self.mainLayout.addLayout(self.infoSection)
         self.mainWidget.setLayout(self.mainLayout)
+        self.mainLayout.addWidget(self.active_player_label)
         self.mainLayout.addLayout(self.player1_section)
         self.mainLayout.addLayout(self.player2_section)
 
@@ -103,7 +117,8 @@ class ScoreBoard(QDockWidget):
         self.info_btn.clicked.connect(lambda: self.show_rules())
         self.how_to_btn.clicked.connect(lambda: self.show_help())
         self.reset_btn.clicked.connect(lambda: self.board.resetGame())
-        
+
+        self.update_ui(self.board.player2.get_name(), 1)
         # styles
         self.setStyleSheet("""
             QWidget {
@@ -124,6 +139,7 @@ class ScoreBoard(QDockWidget):
 
         self.pass_turn_btn.clicked.connect(lambda: self.show_finish_result(-1))
 
+    # function to show window to show rules
     def show_rules(self):
         # set a dialog window
         rules = QDialog()
@@ -183,6 +199,7 @@ class ScoreBoard(QDockWidget):
         # execute dialog window
         rules.exec()
 
+    # function to show window to show faq
     def show_help(self):
         # set a dialog window
         help = QDialog()
@@ -249,43 +266,57 @@ class ScoreBoard(QDockWidget):
         # execute dialog window
         help.exec()
 
+    # function to parse raw seconds to a classic time stamp
+    def parse_time(self, time):
+        # get full minutes
+        minutes = time / 60
+        # get full seconds
+        seconds =  time % 60
+        # return
+        return str(floor(minutes)) + ":" + str(floor(seconds))
+
     def make_connection(self, board):
         '''this handles a signal sent from the board class'''
         # when the clickLocationSignal is emitted in board the setClickLocation slot receives it
         board.clickLocationSignal.connect(self.setClickLocation)
-    def update_ui(self):
-        # update turn labels
-        if self.board.player1.get_turn() == 1:
-            self.player1_name_label.setStyleSheet("""
-                color: red;
-            """)
-            self.player2_name_label.setStyleSheet("""
-                color: grey;
-            """)
-            print("Changed 1")
 
-        if self.board.player2.get_turn() == 1:
-            self.player2_name_label.setStyleSheet("""
-                            color: grey;
-                        """)
-            self.player1_name_label.setStyleSheet("""
-                            color: blue;
-                        """)
-            print("Changed 2")
+    def update_ui(self, player_name, turn):
+        # self.active_player_label.setText(self.board.player2.get_name())
+        # update turn labels
+        if player_name == self.board.player1.get_name():
+            if turn == 1:
+                self.active_player_label.setText(self.board.player1.get_name())
+                self.active_player_label.setStyleSheet("""
+                    color: orange;
+                """)
+                # self.setStyleSheet("""
+                #     #player1_section {
+                #         color: black;
+                #     }
+                #     #player2_section {
+                #         color: gray;
+                #     }
+                # """)
+        elif player_name == self.board.player2.get_name():
+            if turn == 1:
+                self.active_player_label.setText(self.board.player2.get_name())
+                self.active_player_label.setStyleSheet("""
+                    color: green;
+                """)
 
         # update timer labels
     def update_timer(self, player_name, time_left):
         # find which player to update his timer
         if player_name == self.board.player1.get_name():
-            self.player1_time_label.setText(f"{time_left} seconds")
+            self.player1_time_label.setText(f"{self.parse_time(time_left)}")
         elif player_name == self.board.player2.get_name():
-            self.player2_time_label.setText(f"{time_left} seconds")
+            self.player2_time_label.setText(f"{self.parse_time(time_left)}")
     def update_score(self, player_name, score):
         # find which player to update his timer
         if player_name == self.board.player1.get_name():
-            self.player1_score_label.setText(f"Prisoners: {score} ")
+            self.player1_score_label.setText(f"Scores: {score} ")
         elif player_name == self.board.player2.get_name():
-            self.player2_score_label.setText(f"Prisoners: {score}")
+            self.player2_score_label.setText(f"Scores: {score}")
 
     @pyqtSlot(str)  # checks to make sure that the following slot is receiving an argument of the type 'int'
     def setClickLocation(self, clickLoc):
