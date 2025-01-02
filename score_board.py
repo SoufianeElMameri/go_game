@@ -62,11 +62,13 @@ class ScoreBoard(QDockWidget):
 
         # elements to a score board
         self.player1_name_label = QLabel(f"{self.board.player1.get_name()}")
-        self.player1_time_label = QLabel(f"{self.board.player1.get_time()} seconds")
+        if self.board.game_mode == "timed":
+            self.player1_time_label = QLabel(f"{self.board.player1.get_time()} seconds")
         self.player1_score_label = QLabel(f"{self.board.player1.get_capturedPieces()}")
 
         self.player2_name_label = QLabel(f"{self.board.player2.get_name()}")
-        self.player2_time_label = QLabel(f"{self.board.player2.get_time()} seconds")
+        if self.board.game_mode == "timed":
+            self.player2_time_label = QLabel(f"{self.board.player2.get_time()} seconds")
         self.player2_score_label = QLabel(f"{self.board.player2.get_capturedPieces()}")
 
         self.infoSection.addStretch()
@@ -75,11 +77,13 @@ class ScoreBoard(QDockWidget):
         self.infoSection.addStretch()
 
         self.player1_section.addWidget(self.player1_name_label)
-        self.player1_section.addWidget(self.player1_time_label)
+        if self.board.game_mode == "timed":
+            self.player1_section.addWidget(self.player1_time_label)
         self.player1_section.addWidget(self.player1_score_label)
 
         self.player2_section.addWidget(self.player2_name_label)
-        self.player2_section.addWidget(self.player2_time_label)
+        if self.board.game_mode == "timed":
+            self.player2_section.addWidget(self.player2_time_label)
         self.player2_section.addWidget(self.player2_score_label)
 
         self.pass_turn_btn = QPushButton("Pass")
@@ -278,10 +282,11 @@ class ScoreBoard(QDockWidget):
         # update timer labels
     def update_timer(self, player_name, time_left):
         # find which player to update his timer
-        if player_name == self.board.player1.get_name():
-            self.player1_time_label.setText(f"{time_left} seconds")
-        elif player_name == self.board.player2.get_name():
-            self.player2_time_label.setText(f"{time_left} seconds")
+        if self.board.game_mode == "timed":
+            if player_name == self.board.player1.get_name():
+                self.player1_time_label.setText(f"{time_left} seconds")
+            elif player_name == self.board.player2.get_name():
+                self.player2_time_label.setText(f"{time_left} seconds")
     def update_score(self, player_name, score):
         # find which player to update his timer
         if player_name == self.board.player1.get_name():

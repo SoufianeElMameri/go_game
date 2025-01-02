@@ -222,8 +222,8 @@ class Board(QFrame):  # base the board on a QFrame widget
 
         # show player info dialog
         self.showPlayerInfoDialog()
-        print("current player time " , self.game_logic.getCurrentPlayer().get_time())
-        self.game_logic.getCurrentPlayer().startTimer()
+        # starting timer if the game mode is timed
+        self.startTimeForPlayer()
         
 
     def printBoardArray(self):
@@ -307,7 +307,7 @@ class Board(QFrame):  # base the board on a QFrame widget
                 self.game_logic.switchTurn()
                 self.game_logic.setBoard(self.boardArray)
                 self.game_logic.currentPlayer.set_turn(1)
-                self.game_logic.currentPlayer.startTimer()
+                self.startTimeForPlayer()
                 # printing scores for debug
                 print("Current scores: \nPlayer 1 captured" , self.player1.get_capturedPieces() , "\nPlayer 2 captured" , self.player2.get_capturedPieces()  )
             else:
@@ -330,7 +330,8 @@ class Board(QFrame):  # base the board on a QFrame widget
         # Show player info dialog
         self.showPlayerInfoDialog()
         print("game restarted")
-        self.game_logic.currentPlayer.startTimer()
+        self.startTimeForPlayer()
+        
     def tryMove(self, newX, newY):
         '''tries to move a piece'''
         
@@ -396,17 +397,25 @@ class Board(QFrame):  # base the board on a QFrame widget
     def endGame(self):
         QApplication.quit()
 
+    def startTimeForPlayer(self):
+        if self.game_mode == "timed":
+            self.game_logic.currentPlayer.startTimer()
     # method to display dialog showing player information and assigned pieces
     def showPlayerInfoDialog(self):
         dialogWindow = QDialog()
         dialogWindow.setWindowTitle("Player Information")
         layout = QVBoxLayout()
 
+        # Game mode label
+        game_mode_label = QLabel(f"Game Mode: {self.game_mode.capitalize()}")
+        game_mode_label.setStyleSheet("font-size: 16px; font-weight: bold; color: blue; margin: 10px;")
+        layout.addWidget(game_mode_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
         # Create and configure labels for player information
-        player1_label = QLabel(f"{self.player1.get_name()} - Piece: {'Black' if self.player1.get_piece() == Piece.Black else 'White'}")
+        player1_label = QLabel(f"{self.player1.get_name()} is playing: {'Black' if self.player1.get_piece() == Piece.Black else 'White'}")
         player1_label.setStyleSheet("font-size: 16px; margin: 10px;")
 
-        player2_label = QLabel(f"{self.player2.get_name()} - Piece: {'Black' if self.player2.get_piece() == Piece.Black else 'White'}")
+        player2_label = QLabel(f"{self.player2.get_name()} is playing: {'Black' if self.player2.get_piece() == Piece.Black else 'White'}")
         player2_label.setStyleSheet("font-size: 16px; margin: 10px;")
 
         # Indicate who goes first
