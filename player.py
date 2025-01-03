@@ -19,10 +19,10 @@ class Player(QObject):
         self.piece = Piece.NoPiece  # Assuming Piece class has a 'noPiece' constant
         self.timer_running = False
 
-    def get_turn(self):
-        return self.turn
-    def set_turn(self, turn):
-        self.turn = turn
+    # def get_turn(self):
+    #     return self.turn
+    # def set_turn(self, turn):
+    #     self.turn = turn
     # Getter for name
     def get_name(self):
         return self.name

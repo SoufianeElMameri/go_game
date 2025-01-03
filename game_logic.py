@@ -47,10 +47,12 @@ class GameLogic(QObject):
     
     # method to switch the current player
     def switchTurn(self):
+        self.currentPlayer.set_turn(0)
         if self.currentPlayer == self.player1:
             self.currentPlayer = self.player2
         else:
             self.currentPlayer = self.player1
+        self.currentPlayer.set_turn(1)
     
     # method to search for group of connected pieces using flood-fill algo
     def find_group(self, board, x, y, player_color):
@@ -271,6 +273,10 @@ class GameLogic(QObject):
             self.player1.stopTimer()
             self.player2.stopTimer()
             return True
+
+        self.currentPlayer.stopTimer()
+        self.switchTurn()
+        self.currentPlayer.startTimer()
         # only one pass has been made continue the game
         return False
     

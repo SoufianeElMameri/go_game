@@ -378,6 +378,7 @@ class ScoreBoard(QDockWidget):
             btn_restart.setObjectName("restart_game_btn")
 
             button = QPushButton("Close")
+            button.setObjectName("close_game_btn")
 
             buttonSection = QHBoxLayout()
             buttonSection.addWidget(btn_restart)
@@ -413,6 +414,17 @@ class ScoreBoard(QDockWidget):
                 }
                 #restart_game_btn {
                     background-color: rgb(250, 241, 202);
+                    font-weight: bold;
+                }
+                #close_game_btn {
+                    background-color: rgb(240, 192, 187);
+                    font-weight: bold;
+                }
+                #restart_game_btn:hover {
+                    background-color: rgb(230, 215, 151);
+                }
+                #close_game_btn:hover{
+                    background-color: rgb(196, 141, 135);
                 }
                 """
             )
