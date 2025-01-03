@@ -55,10 +55,6 @@ class ScoreBoard(QDockWidget):
         self.player2_section_widget.setFixedHeight(150)
         self.player2_section = QVBoxLayout(self.player2_section_widget)
 
-        # create two labels which will be updated by signals
-        # self.label_clickLocation = QLabel("Click Location: ")
-        # self.label_timeRemaining = QLabel("Time remaining: ")
-
         # elements to info section
         self.info_btn = QPushButton()
         self.info_btn.setIcon(QIcon("icons/info_icon.png"))
@@ -70,6 +66,7 @@ class ScoreBoard(QDockWidget):
         self.how_to_btn.setObjectName("how_to_btn")
         self.how_to_btn.setIconSize(QSize(20, 20))
 
+        # active user label controll
         self.active_player_widget = QWidget()
         self.active_player_label_layout =  QHBoxLayout(self.active_player_widget)
         self.active_player_label = QLabel(f"{self.board.player1.get_name()}")
@@ -77,34 +74,48 @@ class ScoreBoard(QDockWidget):
         self.active_player_widget.setFixedHeight(50)
 
         # elements to a score board
+        # player 1 section
+        # name
         self.player1_name_label = QLabel(f"{self.board.player1.get_name()}")
         self.player1_name_label.setStyleSheet("""
             font-weight: bold;
             font-size: 18px;
         """)
+        # type of peaces
         self.player1_color_label = QLabel(f"Peaces: White")
+        # to show or not time left label
         if self.board.game_mode == "timed":
             self.player1_time_label = QLabel(f"Time left: {self.parse_time(self.board.player2.get_time())}")
+        # show score
         self.player1_score_label = QLabel(f"Score: {self.board.player1.get_capturedPieces()}")
+        # show area captured
         self.player1_territory_label = QLabel(f"Territory: 0")
 
-
+        # player 1 section
+        # name
         self.player2_name_label = QLabel(f"{self.board.player2.get_name()}")
         self.player2_name_label.setStyleSheet("""
             font-weight: bold;
             font-size: 18px;
         """)
+        # type of peaces
         self.player2_color_label = QLabel(f"Peaces: Black")
+        # to show or not time left label
         if self.board.game_mode == "timed":
             self.player2_time_label = QLabel(f"Time left: {self.parse_time(self.board.player2.get_time())}")
+        # show score
         self.player2_score_label = QLabel(f"Score: {self.board.player2.get_capturedPieces()}")
+        # show area captured
         self.player2_territory_label = QLabel(f"Territory: 0")
 
+        # add elements to info section
+        # stratches to add equal space before and after widgets
         self.infoSection.addStretch()
         self.infoSection.addWidget(self.info_btn)
         self.infoSection.addWidget(self.how_to_btn)
         self.infoSection.addStretch()
 
+        # add elements to player 1 section
         self.player1_section.addWidget(self.player1_name_label)
         if self.board.game_mode == "timed":
             self.player1_section.addWidget(self.player1_time_label)
@@ -112,6 +123,7 @@ class ScoreBoard(QDockWidget):
         self.player1_section.addWidget(self.player1_score_label)
         self.player1_section.addWidget(self.player1_territory_label)
 
+        # add elements to player 2 section
         self.player2_section.addWidget(self.player2_name_label)
         if self.board.game_mode == "timed":
             self.player2_section.addWidget(self.player2_time_label)
@@ -119,6 +131,7 @@ class ScoreBoard(QDockWidget):
         self.player2_section.addWidget(self.player2_score_label)
         self.player2_section.addWidget(self.player2_territory_label)
 
+        # create control buttons
         self.pass_turn_btn = QPushButton("Pass")
         self.change_mode_btn = QPushButton("Change Mode")
         self.reset_btn = QPushButton("Restart Game")
@@ -129,6 +142,7 @@ class ScoreBoard(QDockWidget):
         line2 = QFrame()
         line2.setFrameShape(QFrame.Shape.HLine)
 
+        # add all elements to a main layout
         self.mainWidget.setLayout(self.mainLayout)
         self.mainLayout.addLayout(self.infoSection)
         self.mainLayout.addStretch()
@@ -143,15 +157,17 @@ class ScoreBoard(QDockWidget):
         self.mainLayout.addWidget(self.pass_turn_btn)
         self.mainLayout.addWidget(self.reset_btn)
         self.mainLayout.addWidget(self.change_mode_btn)
- 
 
+        # set everything to a score board widget
         self.setWidget(self.mainWidget)
 
         # listeners for buttons
         self.info_btn.clicked.connect(lambda: self.show_rules())
         self.how_to_btn.clicked.connect(lambda: self.show_help())
         self.reset_btn.clicked.connect(lambda: self.board.resetGame())
+        self.pass_turn_btn.clicked.connect(lambda: self.show_finish_result(-1))
 
+        # update ui for first move
         self.update_ui(self.board.player2.get_name(), 1)
         # styles
         self.setStyleSheet("""
@@ -177,8 +193,6 @@ class ScoreBoard(QDockWidget):
                 border: none;
             }
         """)
-
-        self.pass_turn_btn.clicked.connect(lambda: self.show_finish_result(-1))
 
     # function to show window to show rules
     def show_rules(self):
@@ -411,21 +425,26 @@ class ScoreBoard(QDockWidget):
                     layout.addWidget(QLabel(winner.get_name() + " won"), alignment=Qt.AlignmentFlag.AlignCenter)
                     layout.addWidget(QLabel("Score :" + str(winner.get_finalScore())), alignment=Qt.AlignmentFlag.AlignCenter)
 
+            # create buttons and object names for them
             btn_restart = QPushButton("Restart")
             btn_restart.setObjectName("restart_game_btn")
 
             button = QPushButton("Close")
             button.setObjectName("close_game_btn")
 
+            # group buttons to section
             buttonSection = QHBoxLayout()
             buttonSection.addWidget(btn_restart)
             buttonSection.addWidget(button)
 
+            # add button section to a dialog window
             layout.addLayout(buttonSection)
 
+            # event listeners for buttons
             btn_restart.clicked.connect(lambda: (self.board.resetGame(), dialogWindow.accept()))
             button.clicked.connect(lambda: (self.board.endGame(), dialogWindow.accept()))
 
+            # set layout
             dialogWindow.setLayout(layout)
             # st styles
             dialogWindow.setStyleSheet(

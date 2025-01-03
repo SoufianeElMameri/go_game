@@ -26,9 +26,10 @@ class Board(QFrame):  # base the board on a QFrame widget
         # game mode
         self.game_mode = "timed"
 
-        # great мы names collection
+        # greating, set names and set game mode dialog
         self.initDialog()
 
+        # init score board widget
         self.initBoard()
 
     def initDialog(self):
@@ -44,13 +45,21 @@ class Board(QFrame):  # base the board on a QFrame widget
 
         # buttons and their class names
         name1 = QTextEdit("")
+        # set a place holder as expected user names
         name1.setPlaceholderText("Player 1")
+        # set a size
         name1.setFixedSize(150, 38)
+        # set object name
         name1.setObjectName("name_input")
+
         names_separator = QLabel("vs")
+
         name2 = QTextEdit("")
+        # set a place holder as expected user names
         name2.setPlaceholderText("Player 2")
+        # set object name
         name2.setObjectName("name_input")
+        # set a size
         name2.setFixedSize(150, 38)
 
         # add to names box layout
@@ -111,6 +120,7 @@ class Board(QFrame):  # base the board on a QFrame widget
 
         dialogWindow.setLayout(layout)
 
+        # buttons press events
         timed_level_btn.clicked.connect(lambda: self.select_level_processing(timed_level_btn, general_level_btn))
         general_level_btn.clicked.connect(lambda: self.select_level_processing(timed_level_btn, general_level_btn))
         start_btn.clicked.connect(lambda: self.on_start_button_clicked(dialogWindow, name1, name2))
@@ -179,6 +189,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         dialogWindow.exec()
 
     def on_start_button_clicked(self, dialog, name1, name2):
+        # convert user inputs and set names for players objects
         if name1.toPlainText() :
             self.player1.set_name(name1.toPlainText())
 
@@ -188,14 +199,20 @@ class Board(QFrame):  # base the board on a QFrame widget
         # print game info to console
         print(self.player1.get_name() + " vs " + self.player2.get_name())
         print("game mode: " + str(self.game_mode))
+        # close dialog
         dialog.accept()
 
     def select_level_processing(self, timed_level_btn, general_level_btn):
+        # process game mode selection and view of buttons to accomodate selection change
         active_btn = self.sender()
+        # timed mode
         if active_btn == timed_level_btn:
+            # set game mode
             self.game_mode = "timed"
             # print("timed level")
+            # choose not active button
             not_active_btn = general_level_btn
+            # set styles
             active_btn.setStyleSheet("""
                 background-color: rgb(220, 239, 252);
                 border: 1px solid rgb(160, 197, 222);
@@ -206,8 +223,11 @@ class Board(QFrame):  # base the board on a QFrame widget
             """)
         elif active_btn == general_level_btn:
             # print("no timer level")
+            # set game mode
             self.game_mode = "general"
+            # choose not active button
             not_active_btn = timed_level_btn
+            # set styles
             active_btn.setStyleSheet("""
                 background-color: rgb(220, 239, 252);
                 border: 1px solid rgb(160, 197, 222);

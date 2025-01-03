@@ -2,6 +2,7 @@ from piece import Piece  # Ensure this import is correct
 from PyQt6.QtCore import QTimer, pyqtSignal, QObject
 
 class Player(QObject):
+    # signal updates to connect ui change on change of those variables
     timerExpiredSignal = pyqtSignal(str) 
     timerUpdateSignal = pyqtSignal(str, int)
     scoreUpdateSignal = pyqtSignal(str, int)
@@ -19,10 +20,6 @@ class Player(QObject):
         self.piece = Piece.NoPiece  # Assuming Piece class has a 'noPiece' constant
         self.timer_running = False
 
-    # def get_turn(self):
-    #     return self.turn
-    # def set_turn(self, turn):
-    #     self.turn = turn
     # Getter for name
     def get_name(self):
         return self.name

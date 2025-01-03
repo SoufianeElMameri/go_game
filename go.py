@@ -24,26 +24,39 @@ class Go(QMainWindow):
         # self.setCentralWidget(self.board)
         self.board = Board(self)
 
+        # moved to a v box layout to add margins between board and parent go widget
         layout = QVBoxLayout()
 
+        # vertical spacer to add 120 point margin on top
         vertical_spacer = QSpacerItem(0, 120, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        # first add spacer
         layout.addSpacerItem(vertical_spacer)
+        # add board itself
         layout.addWidget(self.board)
 
+        # central overall app
         central_widget = QWidget(self)
+        # set layout with board
         central_widget.setLayout(layout)
 
+        # make this wiget central
         self.setCentralWidget(central_widget)
 
+        # add a score board
         self.scoreBoard = ScoreBoard(self.board)
+        # establish connection with scoreboard
         self.scoreBoard.connect_game_logic(self.board.game_logic) 
         
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.scoreBoard)
         self.scoreBoard.make_connection(self.board)
 
+        # set a size
         self.resize(750, 750)
+        # place on center
         self.center()
+        # set title
         self.setWindowTitle('Go')
+        # show
         self.show()
 
 
