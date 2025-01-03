@@ -269,16 +269,19 @@ class GameLogic(QObject):
     def passTurn(self):
         print("player passed")
         self.passUpdateSignal.emit(self.currentPlayer.get_name() , "pass")
+
         self.passes +=1
+        self.currentPlayer.stopTimer()
+        self.switchTurn()
+        self.currentPlayer.set_capturedPieces(1)
+        self.currentPlayer.startTimer()
         # if two passes has been made return true to end the game
         if self.passes == 2:
             self.player1.stopTimer()
             self.player2.stopTimer()
             return True
 
-        self.currentPlayer.stopTimer()
-        self.switchTurn()
-        self.currentPlayer.startTimer()
+        
         # only one pass has been made continue the game
         return False
     
