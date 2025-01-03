@@ -241,22 +241,13 @@ class ScoreBoard(QDockWidget):
         logic_label = QLabel("Frequently asked questions")
         logic_label.setObjectName("logic_label")
         layout.addWidget(logic_label, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(QLabel("1. Black plays first, with black and white taking turns."))
-        layout.addWidget(
-            QLabel("2. A stone can be placed at any unoccupied intersection of the board with limited exceptions."))
-        layout.addWidget(QLabel(
-            "3. Stones are captured and removed from the board when surrounded on all four sides by the opponent’s stones."))
-        layout.addWidget(QLabel(
-            "4. Suicide Rule: A stone cannot be placed in a position where it has no liberties (empty adjacent points), unless it captures opposing stones."))
-        layout.addWidget(QLabel(
-            "5. Ko Rule: A move that recreates the exact same board position from the previous turn is not allowed."))
-        layout.addWidget(QLabel("6. Players aim to surround and control empty intersections to claim territory."))
-        layout.addWidget(
-            QLabel("7. The game ends when both players pass consecutively, signaling no more useful moves."))
-        layout.addWidget(
-            QLabel("8. Players count controlled empty intersections and captured stones to determine the winner."))
-        last_label = QLabel(
-            "8. Players count controlled empty intersections and captured stones to determine the winner.")
+        layout.addWidget(QLabel("1. Who starts: The player using black stones always moves first, followed by the player using white stones. Turns alternate between players."))
+        layout.addWidget(QLabel("2.How stones can be placed: A stone can be placed on any unoccupied intersection of the board, except in situations where doing so violates the game's rules"))
+        layout.addWidget(QLabel("3. What is territory: Territory refers to empty intersections on the board that are surrounded by a player’s stones."))
+        layout.addWidget(QLabel("4. What is a pass: You skip your turn when you don't see beneficial move."))
+        layout.addWidget(QLabel("5. What is a KO rule: The ko rule removes this possibility of indefinite repetition by forbidding the recapture of the ko."))
+        layout.addWidget(QLabel("6. What is a suicide rule: You cannot place a stone which will immediately have no liberties."))
+        last_label = QLabel("7. When the game ends: The game ends when both players pass their turn, or in speed go mode - when time is over")
         # class for last label to add spacing after
         last_label.setObjectName("last_label")
         layout.addWidget(last_label)
