@@ -8,8 +8,6 @@ from game_logic import GameLogic
 class Board(QFrame):  # base the board on a QFrame widget
     updateTimerSignal = pyqtSignal(int)  # signal sent when the timer is updated
     clickLocationSignal = pyqtSignal(str)  # signal sent when there is a new click location
-
-    # TODO set the board width and height to be square
     
     boardWidth = 6  # setting the board to 6 squares = 7 intersection
     boardHeight = 6 # setting the board to 6 squares = 7 intersection
@@ -22,8 +20,8 @@ class Board(QFrame):  # base the board on a QFrame widget
         super().__init__(parent)
 
         # player info set up
-        self.player1 = Player("Player1")
-        self.player2 = Player("Player2")
+        self.player1 = Player("Player 1")
+        self.player2 = Player("Player 2")
 
         # game mode
         self.game_mode = "timed"
@@ -230,7 +228,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         self.game_logic = GameLogic(self.player1 , self.player2)
         self.game_logic.assign_pieces()
         self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth+1)] for _ in range(self.boardHeight+1)]  # TODO - create a 2d int/Piece array to store the state of the game
-        self.printBoardArray()    # TODO - uncomment this method after creating the array above
+        self.printBoardArray()
         # starting timer if the game mode is timed
         self.startTimeForPlayer()
         
@@ -366,8 +364,8 @@ class Board(QFrame):  # base the board on a QFrame widget
             for col in range(0, Board.boardWidth):
                 painter.save()
                 painter.translate(col * squareWidth, row * squareHeight)
-                painter.setBrush(QBrush(QColor(181, 136, 99)))  # Set brush color
-                painter.drawRect(0, 0, squareWidth, squareHeight)  # Draw rectangles
+                painter.setBrush(QBrush(QColor(189, 140, 100)))  # Set brush color
+                painter.drawRect(0, 0, squareWidth - 1, squareHeight - 1)  # Draw rectangles
                 painter.restore()
 
     def drawPieces(self, painter):

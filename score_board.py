@@ -73,7 +73,7 @@ class ScoreBoard(QDockWidget):
         self.active_player_label_layout =  QHBoxLayout(self.active_player_widget)
         self.active_player_label = QLabel(f"{self.board.player1.get_name()}")
         self.active_player_label_layout.addWidget(self.active_player_label)
-        self.active_player_widget.setFixedHeight(40)
+        self.active_player_widget.setFixedHeight(50)
 
         # elements to a score board
         self.player1_name_label = QLabel(f"{self.board.player1.get_name()}")
@@ -143,14 +143,21 @@ class ScoreBoard(QDockWidget):
             QWidget {
                 width: 150px;
                 background-color: white;
+                font-size: 15px; 
             }
             QPushButton {
+                background-color: rgb(217, 232, 250);
                 padding: 10px 20px;
-                border: 1px solid gray;
+                border: 1px solid rgb(163, 185, 212);
                 font-size: 15px;
                 border-radius: 10%;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: rgb(163, 185, 212);
             }
             QPushButton#info_btn, QPushButton#how_to_btn {
+                background-color: white;
                 width: auto;
                 border: none;
             }
@@ -298,20 +305,34 @@ class ScoreBoard(QDockWidget):
                 self.active_player_label.setText(self.board.player1.get_name())
                 self.active_player_label.setStyleSheet("""
                     color: orange;
+                    font-size: 20px;
+                    font-weight: bold;
                 """)
-                # self.setStyleSheet("""
-                #     #player1_section {
-                #         color: black;
-                #     }
-                #     #player2_section {
-                #         color: gray;
-                #     }
-                # """)
+                self.pass_turn_btn.setStyleSheet("""
+                    QPushButton {
+                        background-color: rgb(252, 230, 199);
+                        border: 1px solid rgb(219, 199, 171);
+                    }
+                    QPushButton:hover {
+                        background-color: rgb(219, 199, 171);
+                    }
+                """)
         elif player_name == self.board.player2.get_name():
             if turn == 1:
                 self.active_player_label.setText(self.board.player2.get_name())
                 self.active_player_label.setStyleSheet("""
                     color: green;
+                    font-size: 20px;
+                    font-weight: bold;
+                """)
+                self.pass_turn_btn.setStyleSheet("""
+                    QPushButton {
+                        background-color: rgb(205, 247, 210);
+                        border: 1px solid rgb(171, 207, 176);
+                    }
+                    QPushButton:hover {
+                        background-color: rgb(171, 207, 176);
+                    }
                 """)
 
         # update timer labels
@@ -364,7 +385,7 @@ class ScoreBoard(QDockWidget):
             score_player_2 = self.board.player2.get_finalScore()
             if player!= -1:
                 layout.addWidget(QLabel(player.get_name() + " won"), alignment=Qt.AlignmentFlag.AlignCenter)
-                layout.addWidget(QLabel("Score :" + str(player.get_finalScore())), alignment=Qt.AlignmentFlag.AlignCenter)
+                layout.addWidget(QLabel("Score : " + str(player.get_finalScore())), alignment=Qt.AlignmentFlag.AlignCenter)
             else:
                 winner = self.board.player1 if score_player_1 > score_player_2 else self.board.player2 if score_player_2 > score_player_1 else 0
                 # show corresponding result
@@ -417,7 +438,7 @@ class ScoreBoard(QDockWidget):
                     font-weight: bold;
                 }
                 #close_game_btn {
-                    background-color: rgb(240, 192, 187);
+                    background-color: rgb(245, 188, 188);
                     font-weight: bold;
                 }
                 #restart_game_btn:hover {
