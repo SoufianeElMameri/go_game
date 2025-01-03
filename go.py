@@ -1,4 +1,5 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QDockWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow, QDockWidget, QVBoxLayout, QSpacerItem, QSizePolicy, QWidget, \
+    QHBoxLayout
 from PyQt6.QtCore import Qt
 
 from board import Board
@@ -19,8 +20,20 @@ class Go(QMainWindow):
 
     def initUI(self):
         '''Initiates application UI'''
+        # self.board = Board(self)
+        # self.setCentralWidget(self.board)
         self.board = Board(self)
-        self.setCentralWidget(self.board)
+
+        layout = QVBoxLayout()
+
+        vertical_spacer = QSpacerItem(0, 120, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        layout.addSpacerItem(vertical_spacer)
+        layout.addWidget(self.board)
+
+        central_widget = QWidget(self)
+        central_widget.setLayout(layout)
+
+        self.setCentralWidget(central_widget)
 
         self.scoreBoard = ScoreBoard(self.board)
         self.scoreBoard.connect_game_logic(self.board.game_logic) 
@@ -28,7 +41,7 @@ class Go(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.scoreBoard)
         self.scoreBoard.make_connection(self.board)
 
-        self.resize(800, 800)
+        self.resize(750, 750)
         self.center()
         self.setWindowTitle('Go')
         self.show()

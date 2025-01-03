@@ -1,7 +1,8 @@
 from math import floor
 
 from PyQt6.QtGui import QImage, QPixmap, QIcon
-from PyQt6.QtWidgets import QDockWidget, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QPushButton, QDialog, QGridLayout
+from PyQt6.QtWidgets import QDockWidget, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QPushButton, QDialog, QGridLayout, \
+    QFrame
 from PyQt6.QtCore import pyqtSlot, Qt, QSize
 from board import Board
 
@@ -62,12 +63,12 @@ class ScoreBoard(QDockWidget):
         self.info_btn = QPushButton()
         self.info_btn.setIcon(QIcon("icons/info_icon.png"))
         self.info_btn.setObjectName("info_btn")
-        self.info_btn.setIconSize(QSize(15,15))
+        self.info_btn.setIconSize(QSize(20,20))
 
         self.how_to_btn = QPushButton()
         self.how_to_btn.setIcon(QIcon("icons/help_icon.png"))
         self.how_to_btn.setObjectName("how_to_btn")
-        self.how_to_btn.setIconSize(QSize(15, 15))
+        self.how_to_btn.setIconSize(QSize(20, 20))
 
         self.active_player_widget = QWidget()
         self.active_player_label_layout =  QHBoxLayout(self.active_player_widget)
@@ -77,6 +78,10 @@ class ScoreBoard(QDockWidget):
 
         # elements to a score board
         self.player1_name_label = QLabel(f"{self.board.player1.get_name()}")
+        self.player1_name_label.setStyleSheet("""
+            font-weight: bold;
+            font-size: 18px;
+        """)
         self.player1_color_label = QLabel(f"Peaces: White")
         if self.board.game_mode == "timed":
             self.player1_time_label = QLabel(f"Time left: {self.parse_time(self.board.player2.get_time())}")
@@ -85,6 +90,10 @@ class ScoreBoard(QDockWidget):
 
 
         self.player2_name_label = QLabel(f"{self.board.player2.get_name()}")
+        self.player2_name_label.setStyleSheet("""
+            font-weight: bold;
+            font-size: 18px;
+        """)
         self.player2_color_label = QLabel(f"Peaces: Black")
         if self.board.game_mode == "timed":
             self.player2_time_label = QLabel(f"Time left: {self.parse_time(self.board.player2.get_time())}")
@@ -96,14 +105,14 @@ class ScoreBoard(QDockWidget):
         self.infoSection.addWidget(self.how_to_btn)
         self.infoSection.addStretch()
 
-        self.player1_section.addWidget(self.player1_name_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.player1_section.addWidget(self.player1_name_label)
         if self.board.game_mode == "timed":
             self.player1_section.addWidget(self.player1_time_label)
         self.player1_section.addWidget(self.player1_color_label)
         self.player1_section.addWidget(self.player1_score_label)
         self.player1_section.addWidget(self.player1_territory_label)
 
-        self.player2_section.addWidget(self.player2_name_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.player2_section.addWidget(self.player2_name_label)
         if self.board.game_mode == "timed":
             self.player2_section.addWidget(self.player2_time_label)
         self.player2_section.addWidget(self.player2_color_label)
@@ -111,23 +120,29 @@ class ScoreBoard(QDockWidget):
         self.player2_section.addWidget(self.player2_territory_label)
 
         self.pass_turn_btn = QPushButton("Pass")
+        self.change_mode_btn = QPushButton("Change Mode")
         self.reset_btn = QPushButton("Restart Game")
+
+        # separator line
+        line = QFrame()
+        line.setFrameShape(QFrame.Shape.HLine)
+        line2 = QFrame()
+        line2.setFrameShape(QFrame.Shape.HLine)
 
         self.mainWidget.setLayout(self.mainLayout)
         self.mainLayout.addLayout(self.infoSection)
         self.mainLayout.addStretch()
         self.mainLayout.addWidget(self.active_player_widget, alignment=Qt.AlignmentFlag.AlignCenter)
         self.mainLayout.addStretch()
+        self.mainLayout.addWidget(line)
         self.mainLayout.addWidget(self.player1_section_widget)
+        self.mainLayout.addWidget(line2)
         self.mainLayout.addWidget(self.player2_section_widget)
         self.mainLayout.addStretch()
 
-        # init set up
-        # self.mainLayout.addWidget(self.label_clickLocation)
-        # self.mainLayout.addWidget(self.label_timeRemaining)
-
         self.mainLayout.addWidget(self.pass_turn_btn)
         self.mainLayout.addWidget(self.reset_btn)
+        self.mainLayout.addWidget(self.change_mode_btn)
  
 
         self.setWidget(self.mainWidget)
@@ -143,7 +158,7 @@ class ScoreBoard(QDockWidget):
             QWidget {
                 width: 150px;
                 background-color: white;
-                font-size: 15px; 
+                font-size: 15px;
             }
             QPushButton {
                 background-color: rgb(217, 232, 250);
@@ -364,6 +379,7 @@ class ScoreBoard(QDockWidget):
 
             self.end_game()
             dialogWindow = QDialog()
+            dialogWindow.setWindowFlags(Qt.WindowType.FramelessWindowHint)
             layout = QVBoxLayout()
 
             # a label for image

@@ -227,7 +227,7 @@ class Board(QFrame):  # base the board on a QFrame widget
         
         self.game_logic = GameLogic(self.player1 , self.player2)
         self.game_logic.assign_pieces()
-        self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth+1)] for _ in range(self.boardHeight+1)]  # TODO - create a 2d int/Piece array to store the state of the game
+        self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth+1)] for _ in range(self.boardHeight+1)]
         self.printBoardArray()
         # starting timer if the game mode is timed
         self.startTimeForPlayer()
@@ -358,6 +358,7 @@ class Board(QFrame):  # base the board on a QFrame widget
 
     def drawBoardSquares(self, painter):
         '''draw all the square on the board'''
+        self.resize(510, 510)
         squareWidth = int(self.squareWidth())
         squareHeight = int(self.squareHeight())
         for row in range(0, Board.boardHeight):
