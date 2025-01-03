@@ -2,10 +2,10 @@ import random
 from piece import Piece
 from PyQt6.QtCore import QObject, pyqtSignal
 class GameLogic(QObject):
-    timerUpdateSignal = pyqtSignal()
+    passUpdateSignal = pyqtSignal(str, str)
+    UpdateBoardSignal = pyqtSignal()
     def __init__(self, player1 , player2):
-        '''Initializes the GameLogic object'''
-        print("Game Logic Object Created")
+        super().__init__()
         self.currentPlayer = None
         self.player1 = player1
         self.player2 = player2
@@ -258,7 +258,8 @@ class GameLogic(QObject):
     # method to clear the passes
     def clearPass(self):
         self.passes = 0
-        print("current passes" , self.passes)
+        print("clearing passes")
+        self.passUpdateSignal.emit("" , "clear")
 
     # method to clear the past moves
     def clearMoves(self):
@@ -267,6 +268,7 @@ class GameLogic(QObject):
     # method to pass the current turn
     def passTurn(self):
         print("player passed")
+        self.passUpdateSignal.emit(self.currentPlayer.get_name() , "pass")
         self.passes +=1
         # if two passes has been made return true to end the game
         if self.passes == 2:
@@ -280,14 +282,9 @@ class GameLogic(QObject):
         # only one pass has been made continue the game
         return False
     
-
-    # method to calculate the final score for each player
-    def calculate_final_scores(self, board):
-
+    def calculate_territory(self, board, piece):
         # Initialize territory counts
-        white_territory = 0
-        black_territory = 0
-
+        territory = 0
         # Visited set to track processed points
         visited = set()
 
@@ -299,30 +296,35 @@ class GameLogic(QObject):
                     visited.update(group)  # Mark group as visited
 
                     # Use is_group_surrounded to determine if the group is surrounded by one color
-                    if self.is_group_surrounded(board, group, 1):
-                        white_territory += len(group)
-                    elif self.is_group_surrounded(board, group, 2):
-                        black_territory += len(group)
+                    if self.is_group_surrounded(board, group, piece):
+                        territory += len(group)
+        return territory
+
+    # method to calculate the final score for each player
+    def calculate_final_scores(self, board):
+        
+
 
         # Calculate final scores
-        print(self.player1.get_capturedPieces())
-        print(self.player2.get_capturedPieces())
-        print(white_territory , sum(row.count(1) for row in board))
-        player1_score = white_territory + sum(row.count(1) for row in board)
-        player2_score = black_territory + sum(row.count(2) for row in board)
+        #print(self.player1.get_capturedPieces())
+        #print(self.player2.get_capturedPieces())
 
         # Update player objects
         if self.player1.get_piece() == Piece.White:
-            player1_score += self.player1.get_capturedPieces()
-            player2_score += self.player2.get_capturedPieces()
+            player1_score = self.player1.get_capturedPieces() + self.player1.get_territory() + sum(row.count(1) for row in board)
+            player2_score = self.player2.get_capturedPieces() + self.player2.get_territory() + sum(row.count(2) for row in board)
             self.player1.set_finalScore(player1_score)
             self.player2.set_finalScore(player2_score)
         else:
-            player1_score += self.player2.get_capturedPieces()
-            player2_score += self.player1.get_capturedPieces()
+            player1_score = self.player2.get_capturedPieces()+ self.player2.get_territory() + sum(row.count(2) for row in board)
+            player2_score = self.player1.get_capturedPieces()+ self.player1.get_territory() + sum(row.count(1) for row in board)
             self.player1.set_finalScore(player2_score) 
             self.player2.set_finalScore(player1_score) 
 
         # Print the final scores for debugging
         print(f"{self.player1.get_name()} {self.player1.get_piece()} {self.player1.get_finalScore()}")
         print(f"{self.player2.get_name()} {self.player2.get_piece()} {self.player2.get_finalScore()}")
+
+    def playersModeChanged(self):
+        print("game changed")
+        self.UpdateBoardSignal.emit()

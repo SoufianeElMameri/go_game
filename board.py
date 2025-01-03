@@ -330,9 +330,11 @@ class Board(QFrame):  # base the board on a QFrame widget
                 # update the player's score
                 self.game_logic.getCurrentPlayer().set_capturedPieces(len(captured_pieces))
                 print("Pieces captured ", selfCaptured , selfCaptured)
+                self.game_logic.getCurrentPlayer().set_territory(self.game_logic.calculate_territory(self.boardArray , self.game_logic.getCurrentPlayer().get_piece()))
                 # switch the turns
                 self.game_logic.switchTurn()
                 self.game_logic.setBoard(self.boardArray)
+                self.game_logic.getCurrentPlayer().set_territory(self.game_logic.calculate_territory(self.boardArray , self.game_logic.getCurrentPlayer().get_piece()))
                 # self.game_logic.currentPlayer.set_turn(1)
                 self.startTimeForPlayer()
                 # printing scores for debug
@@ -348,13 +350,12 @@ class Board(QFrame):  # base the board on a QFrame widget
         self.boardArray = [[Piece.NoPiece for _ in range(self.boardWidth+1)] for _ in range(self.boardHeight+1)]
         self.player1.reset()
         self.player2.reset()
-        self.game_logic = GameLogic(self.player1 , self.player2)
-        self.game_logic.clearPass()
-        self.game_logic.clearMoves()
-        
         self.game_logic.assign_pieces()
+        self.game_logic.clearMoves()
         self.update()
+        self.game_logic.clearPass()
         print("game restarted")
+        self.game_logic.playersModeChanged()
         self.startTimeForPlayer()
         
     def tryMove(self, newX, newY):
@@ -426,3 +427,4 @@ class Board(QFrame):  # base the board on a QFrame widget
     def startTimeForPlayer(self):
         if self.game_mode == "timed":
             self.game_logic.currentPlayer.startTimer()
+

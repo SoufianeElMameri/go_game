@@ -33,6 +33,15 @@ class ScoreBoard(QDockWidget):
         self.board.player1.scoreUpdateSignal.connect(self.update_score)
         self.board.player2.scoreUpdateSignal.connect(self.update_score)
 
+        self.board.player1.territoryUpdateSignal.connect(self.update_terriory)
+        self.board.player2.territoryUpdateSignal.connect(self.update_terriory)
+        
+        self.board.game_logic.passUpdateSignal.connect(self.update_pass)
+
+        self.board.game_logic.UpdateBoardSignal.connect(self.updateBoard)
+        #self.board.player1.timerUpdateSignal.connect(self.update_timer)
+        #self.board.player2.timerUpdateSignal.connect(self.update_timer)
+
     def initUI(self):
         '''initiates ScoreBoard UI'''
         self.resize(200, 200)
@@ -59,19 +68,35 @@ class ScoreBoard(QDockWidget):
         self.info_btn = QPushButton()
         self.info_btn.setIcon(QIcon("icons/info_icon.png"))
         self.info_btn.setObjectName("info_btn")
-        self.info_btn.setIconSize(QSize(20,20))
+
+        self.info_btn.setIconSize(QSize(30,30))
+        self.info_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+
 
         self.how_to_btn = QPushButton()
         self.how_to_btn.setIcon(QIcon("icons/help_icon.png"))
         self.how_to_btn.setObjectName("how_to_btn")
-        self.how_to_btn.setIconSize(QSize(20, 20))
+
+        self.how_to_btn.setIconSize(QSize(30, 30))
+        self.how_to_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+
 
         # active user label controll
         self.active_player_widget = QWidget()
         self.active_player_label_layout =  QHBoxLayout(self.active_player_widget)
-        self.active_player_label = QLabel(f"{self.board.player1.get_name()}")
+        self.active_player_label = QLabel(f"{self.board.game_logic.getCurrentPlayer().get_name()}")
         self.active_player_label_layout.addWidget(self.active_player_label)
         self.active_player_widget.setFixedHeight(50)
+
+
+        self.pass_label = QWidget()
+        self.pass_label_layout =  QHBoxLayout(self.pass_label)
+        self.pass_label_label = QLabel("")
+        self.pass_label_layout.addWidget(self.pass_label_label)
+        self.pass_label.setFixedHeight(50)
+
+
+        
 
         # elements to a score board
         # player 1 section
@@ -82,7 +107,10 @@ class ScoreBoard(QDockWidget):
             font-size: 18px;
         """)
         # type of peaces
-        self.player1_color_label = QLabel(f"Peaces: White")
+        if self.board.player1.get_piece() == 1:
+            self.player1_color_label = QLabel(f"Pieces: White")
+        else:
+            self.player1_color_label = QLabel(f"Pieces: Black")
         # to show or not time left label
         if self.board.game_mode == "timed":
             self.player1_time_label = QLabel(f"Time left: {self.parse_time(self.board.player2.get_time())}")
@@ -99,7 +127,10 @@ class ScoreBoard(QDockWidget):
             font-size: 18px;
         """)
         # type of peaces
-        self.player2_color_label = QLabel(f"Peaces: Black")
+        if self.board.player2.get_piece() == 1:
+            self.player2_color_label = QLabel(f"Pieces: White")
+        else:
+            self.player2_color_label = QLabel(f"Pieces: Black")
         # to show or not time left label
         if self.board.game_mode == "timed":
             self.player2_time_label = QLabel(f"Time left: {self.parse_time(self.board.player2.get_time())}")
@@ -133,7 +164,7 @@ class ScoreBoard(QDockWidget):
 
         # create control buttons
         self.pass_turn_btn = QPushButton("Pass")
-        self.change_mode_btn = QPushButton("Change Mode")
+        self.change_mode_btn = QPushButton("Players/Mode")
         self.reset_btn = QPushButton("Restart Game")
 
         # separator line
@@ -147,6 +178,7 @@ class ScoreBoard(QDockWidget):
         self.mainLayout.addLayout(self.infoSection)
         self.mainLayout.addStretch()
         self.mainLayout.addWidget(self.active_player_widget, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.mainLayout.addWidget(self.pass_label, alignment=Qt.AlignmentFlag.AlignCenter)
         self.mainLayout.addStretch()
         self.mainLayout.addWidget(line)
         self.mainLayout.addWidget(self.player1_section_widget)
@@ -166,9 +198,10 @@ class ScoreBoard(QDockWidget):
         self.how_to_btn.clicked.connect(lambda: self.show_help())
         self.reset_btn.clicked.connect(lambda: self.board.resetGame())
         self.pass_turn_btn.clicked.connect(lambda: self.show_finish_result(-1))
+        self.change_mode_btn.clicked.connect(lambda: (self.board.initDialog() , self.board.resetGame()))
 
-        # update ui for first move
-        self.update_ui(self.board.player2.get_name(), 1)
+        self.update_ui(self.board.game_logic.getCurrentPlayer().get_name(), 1)
+
         # styles
         self.setStyleSheet("""
             QWidget {
@@ -194,6 +227,18 @@ class ScoreBoard(QDockWidget):
             }
         """)
 
+    def updateBoard(self):
+        if self.board.game_mode == "general":
+            self.player1_time_label.setText("")
+            self.player2_time_label.setText("")
+        self.player1_name_label.setText(self.board.player1.get_name())
+        self.player2_name_label.setText(self.board.player2.get_name())
+        if self.board.player1.get_piece() == 1:
+            self.player1_color_label.setText("Pieces: White")
+            self.player2_color_label.setText("Pieces: Black")
+        else:
+            self.player1_color_label.setText("Pieces: Black")
+            self.player2_color_label.setText("Pieces: White")
     # function to show window to show rules
     def show_rules(self):
         # set a dialog window
@@ -253,7 +298,6 @@ class ScoreBoard(QDockWidget):
         )
         # execute dialog window
         rules.exec()
-
     # function to show window to show faq
     def show_help(self):
         # set a dialog window
@@ -331,7 +375,7 @@ class ScoreBoard(QDockWidget):
         # update turn labels
         if player_name == self.board.player1.get_name():
             if turn == 1:
-                self.active_player_label.setText(self.board.player1.get_name())
+                self.active_player_label.setText(self.board.player1.get_name() + "'s Turn")
                 self.active_player_label.setStyleSheet("""
                     color: orange;
                     font-size: 20px;
@@ -348,7 +392,7 @@ class ScoreBoard(QDockWidget):
                 """)
         elif player_name == self.board.player2.get_name():
             if turn == 1:
-                self.active_player_label.setText(self.board.player2.get_name())
+                self.active_player_label.setText(self.board.player2.get_name()+"'s Turn")
                 self.active_player_label.setStyleSheet("""
                     color: green;
                     font-size: 20px;
@@ -379,7 +423,20 @@ class ScoreBoard(QDockWidget):
             self.player1_score_label.setText(f"Scores: {score} ")
         elif player_name == self.board.player2.get_name():
             self.player2_score_label.setText(f"Scores: {score}")
+    def update_terriory(self, player_name, territory):
+        # find which player to update his timer
+        if player_name == self.board.player1.get_name():
+            self.player1_territory_label.setText(f"Territory: {territory} ")
+        elif player_name == self.board.player2.get_name():
+            self.player2_territory_label.setText(f"Territory: {territory} ")
 
+    def update_pass(self, player_name , type):
+        # find which player to update his timer
+        if type == "pass":
+            self.pass_label_label.setText(f"{player_name} passed his turn")
+        elif type == "clear":
+            self.pass_label_label.setText("")
+ 
     @pyqtSlot(str)  # checks to make sure that the following slot is receiving an argument of the type 'int'
     def setClickLocation(self, clickLoc):
         '''updates the label to show the click location'''
@@ -392,6 +449,8 @@ class ScoreBoard(QDockWidget):
         if self.board.game_logic.passTurn() or player != -1:
 
             self.end_game()
+            self.board.game_logic.player1.startTimer()
+            self.board.game_logic.player2.startTimer()
             dialogWindow = QDialog()
             dialogWindow.setWindowFlags(Qt.WindowType.FramelessWindowHint)
             layout = QVBoxLayout()
